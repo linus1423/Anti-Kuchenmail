@@ -1,6 +1,6 @@
 # Design: Kuchenmail-Guard
 
-> Status: Entwurf · Basis: requirements.md (freigegeben 2026-10-22)
+> Status: Freigegeben (2026-10-22) · Basis: requirements.md (freigegeben 2026-10-22)
 
 ## Überblick
 
@@ -25,7 +25,7 @@ Zwei kleine Erweiterungen greifen dort ein, wo die Mail geschrieben wird: eine T
 | Erkennungsverfahren | Gewichtete Regeln (Score) | ML-Klassifikator | Nachvollziehbar, lokal, ohne Trainingsdaten; Gewichte über das Test-Korpus kalibrierbar. |
 | Bildschirm sperren | `loginctl lock-session` | `gnome-screensaver-command`, D-Bus `org.gnome.ScreenSaver.Lock` | Ohne Root, unabhängig von der Desktop-Version. D-Bus als Fallback. |
 | Hinweis nach Entsperren | systemd-User-Dienst, der D-Bus-Signal `org.gnome.ScreenSaver.ActiveChanged(false)` abhört, dann `notify-send` | Hinweis direkt beim Abfangen | Beim Abfangen sitzt der Kollege davor, nicht du (R3.2). |
-| Firefox-Signatur | Unsigniert nicht dauerhaft installierbar in Release-Firefox; daher **unlisted** über AMO signieren (`web-ext sign`) | Firefox Developer Edition/ESR mit `xpinstall.signatures.required=false`, Laden über `about:debugging` | Fedora liefert Release-Firefox. Beim Signieren wird nur der Code der Erweiterung hochgeladen, keine Nutzerdaten (N1 bleibt erfüllt). `about:debugging` hält nur bis zum Neustart. → **Entscheidung durch Linus**, siehe Risiken. |
+| Firefox-Signatur | Unsigniert nicht dauerhaft installierbar in Release-Firefox; daher **unlisted** über AMO signieren (`web-ext sign`) | Firefox Developer Edition/ESR mit `xpinstall.signatures.required=false`, Laden über `about:debugging` | Fedora liefert Release-Firefox. Beim Signieren wird nur der Code der Erweiterung hochgeladen, keine Nutzerdaten (N1 bleibt erfüllt). `about:debugging` hält nur bis zum Neustart. Entschieden 2026-10-22: unlisted signieren. |
 
 ## Architektur
 
@@ -200,7 +200,7 @@ sequenceDiagram
 | Fehlerfall | Verhalten | Anforderung |
 |---|---|---|
 | `rules.toml` fehlt oder ist ungültig | Standardregeln, Warnung in `guard.log` | R4.3 |
-| Host nicht installiert/abgestürzt (Port-Fehler) | **Fail-closed:** Erweiterung bricht das Senden ab und zeigt den Hinweis „Kuchenmail-Guard nicht erreichbar“ (Entscheidung offen, siehe Risiko 3) | R2.1 |
+| Host nicht installiert/abgestürzt (Port-Fehler) | **Fail-closed:** Erweiterung bricht das Senden ab und zeigt den Hinweis „Kuchenmail-Guard nicht erreichbar“ (entschieden 2026-10-22) | R2.1 |
 | Host antwortet nicht innerhalb 120 s (Dialog offen gelassen) | Wie `cancel` | R2.3 |
 | `zenity` fehlt | Host loggt Fehler, Antwort `cancel` | R2.3 |
 | `loginctl` schlägt fehl | Fallback D-Bus `org.gnome.ScreenSaver.Lock`, Fehler loggen | R2.4 |
@@ -264,11 +264,11 @@ Lücken: keine Anforderung ohne Komponente. R1.2 für die Webmailer hängt an de
 ## Risiken & offene Punkte
 
 1. **Gmail-DOM ändert sich** (Klassen sind generiert) → Selektoren nur über stabile Attribute (`name=subjectbox`, `role`, `aria-label`, `data-tooltip`), zentral in `selectors.js`, fail-closed. Frühzeitig im Spike T2 prüfen.
-2. **Firefox-Signatur (Entscheidung Linus):** (a) einmalig als *unlisted* bei addons.mozilla.org signieren lassen (Mozilla-Konto nötig, nur Code wird hochgeladen; empfohlen), (b) Firefox Developer Edition nutzen, (c) bei jedem Firefox-Start über `about:debugging` laden.
-3. **Fail-closed vs. fail-open**, wenn der Host nicht läuft: Empfehlung fail-closed (Senden blockiert, Hinweis). Kehrseite: Ist das Tool kaputt, kannst du aus Thunderbird/Gmail erst nach Deaktivieren der Erweiterung senden.
+2. **Firefox-Signatur:** entschieden 2026-10-22, einmalig *unlisted* bei addons.mozilla.org signieren (Mozilla-Konto und API-Schlüssel von Linus nötig, nur Code wird hochgeladen).
+3. **Fail-closed**, wenn der Host nicht läuft: entschieden 2026-10-22. Kehrseite: Ist das Tool kaputt, kann erst nach Deaktivieren der Erweiterung gesendet werden; der Hinweistext nennt diesen Weg.
 4. **Thunderbird-Native-Messaging-Pfad** auf Linux nicht offiziell dokumentiert gefunden → Installer legt das Manifest in beide Orte; Spike T2 bestätigt.
 5. **`onBeforeSend` und lange Dialoge:** Die API nennt Einschränkungen für asynchrone Listener. Spike T2 prüft, dass ein offener Passwortdialog (bis 120 s) das Senden zuverlässig anhält.
-6. **Annahme:** Gmail und Roundcube laufen in Firefox (offene Frage in requirements.md).
+6. Alle Webmailer laufen in Firefox (bestätigt 2026-10-22).
 7. **Roundcube-Version und Skin:** `rcmail.command` gibt es in allen aktuellen Versionen (1.4 bis 1.6, Skins Elastic und Larry), aber Feldnamen des Editors können abweichen. Der Spike T2 prüft das an deiner Instanz; dafür brauche ich die Adresse bzw. Version.
 8. **Outlook im Web** wird von Microsoft häufig umgebaut, die Selektoren hängen an der Oberflächensprache, und Firmenkonten können Erweiterungen per Richtlinie einschränken (betrifft Firefox-Erweiterungen normalerweise nicht). Gegenmaßnahme wie bei Gmail: stabile Attribute, Deutsch und Englisch, fail-closed, Spike T2.
 
