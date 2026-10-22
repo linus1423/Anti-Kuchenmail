@@ -10,7 +10,7 @@ Zwei kleine Erweiterungen greifen dort ein, wo die Mail geschrieben wird: eine T
 
 | Entscheidung | Gewählt | Alternativen | Begründung |
 |---|---|---|---|
-| Eingriffspunkt | Erweiterungen in Thunderbird und Firefox | (a) systemweites Mitlesen der Tastatur über evdev, (b) lokaler SMTP-Proxy, (c) Gesendet-Ordner überwachen | (a) braucht Root bzw. Gruppe `input`, ist faktisch ein Keylogger und kann das Senden nicht stoppen. (b) greift bei Gmail im Browser gar nicht und bei Thunderbird nur mit TLS-Aufbruch. (c) ist zu spät. Nur Erweiterungen sehen Text **und** können das Senden abbrechen. |
+| Eingriffspunkt | Erweiterungen in Thunderbird und Firefox | (a) systemweites Mitlesen der Tastatur über evdev, (b) lokaler SMTP-Proxy, (c) Gesendet-Ordner überwachen | (a) braucht Root bzw. Gruppe `input`, ist faktisch ein Keylogger und kann das Senden nicht stoppen. (b) greift bei Webmail im Browser gar nicht und bei Thunderbird nur mit TLS-Aufbruch. (c) ist zu spät. Nur Erweiterungen sehen Text **und** können das Senden abbrechen. |
 | Thunderbird-Hook | `compose.onBeforeSend` (MailExtension-API), Rückgabe `{cancel: true}` | Eigenes Overlay/Legacy-Add-on | Offizielle API, liefert `to/cc/bcc`, `subject`, `body`, `plainTextBody` und kann den Versand abbrechen. Legacy-Add-ons laufen nicht mehr. |
 | Webmail-Hook | Eine Firefox-Erweiterung mit je einem Site-Adapter pro Webmailer (Gmail, Roundcube), gemeinsamer Ablauf im Background-Script | Je eine Erweiterung pro Webmailer, Userscript (Tampermonkey), Gmail-API | Ein Paket zum Signieren und Installieren; neue Webmailer = neuer Adapter. Gmail-API bräuchte OAuth und Netzwerk; ein Userscript-Manager kann kein Native Messaging. |
 | Gmail-Adapter | Klick auf „Senden“ und `Strg+Enter` in der Capture-Phase abfangen | Gmail-interne JS-Funktionen patchen | Gmail-JS ist minifiziert und ändert sich ständig; das DOM hat wenigstens stabile Attribute. |
@@ -145,7 +145,7 @@ Abbildung im Host: nicht verdächtig → `send`; `RELEASED` → `send`; `CANCELL
 
 ## Abläufe
 
-### Senden in Thunderbird bzw. Gmail
+### Senden in Thunderbird bzw. Webmail
 
 ```mermaid
 sequenceDiagram
