@@ -4,7 +4,7 @@
 
 ## Überblick
 
-Zwei kleine Erweiterungen greifen dort ein, wo die Mail geschrieben wird: eine Thunderbird-Erweiterung und eine Firefox-Erweiterung für Gmail. Beide fragen beim Senden (und während des Schreibens) einen lokalen Python-Prozess, den **Guard-Host**, ob es sich um eine Kuchenmail handelt. Der Host bewertet den Text nach lokalen Regeln, fragt bei Verdacht dein Linux-Passwort ab, schreibt das Log und sperrt notfalls den Bildschirm. Ein kleiner Hintergrunddienst meldet dir Versuche, sobald du entsperrst. Nichts davon öffnet eine Netzwerkverbindung.
+Zwei kleine Erweiterungen greifen dort ein, wo die Mail geschrieben wird: eine Thunderbird-Erweiterung und eine Firefox-Erweiterung für Webmail (Gmail und Roundcube). Beide fragen beim Senden (und während des Schreibens) einen lokalen Python-Prozess, den **Guard-Host**, ob es sich um eine Kuchenmail handelt. Der Host bewertet den Text nach lokalen Regeln, fragt bei Verdacht dein Linux-Passwort ab, schreibt das Log und sperrt notfalls den Bildschirm. Ein kleiner Hintergrunddienst meldet dir Versuche, sobald du entsperrst. Nichts davon öffnet eine Netzwerkverbindung.
 
 ## Architekturentscheidungen
 
@@ -12,7 +12,10 @@ Zwei kleine Erweiterungen greifen dort ein, wo die Mail geschrieben wird: eine T
 |---|---|---|---|
 | Eingriffspunkt | Erweiterungen in Thunderbird und Firefox | (a) systemweites Mitlesen der Tastatur über evdev, (b) lokaler SMTP-Proxy, (c) Gesendet-Ordner überwachen | (a) braucht Root bzw. Gruppe `input`, ist faktisch ein Keylogger und kann das Senden nicht stoppen. (b) greift bei Gmail im Browser gar nicht und bei Thunderbird nur mit TLS-Aufbruch. (c) ist zu spät. Nur Erweiterungen sehen Text **und** können das Senden abbrechen. |
 | Thunderbird-Hook | `compose.onBeforeSend` (MailExtension-API), Rückgabe `{cancel: true}` | Eigenes Overlay/Legacy-Add-on | Offizielle API, liefert `to/cc/bcc`, `subject`, `body`, `plainTextBody` und kann den Versand abbrechen. Legacy-Add-ons laufen nicht mehr. |
-| Gmail-Hook | Content-Script auf `mail.google.com`, das Klick auf „Senden“ und `Strg+Enter` in der Capture-Phase abfängt | Gmail-API, Userscript (Tampermonkey) | Gmail-API bräuchte OAuth und Netzwerk. Ein Userscript-Manager ist zusätzliche Fremdsoftware ohne Native Messaging. |
+| Webmail-Hook | Eine Firefox-Erweiterung mit je einem Site-Adapter pro Webmailer (Gmail, Roundcube), gemeinsamer Ablauf im Background-Script | Je eine Erweiterung pro Webmailer, Userscript (Tampermonkey), Gmail-API | Ein Paket zum Signieren und Installieren; neue Webmailer = neuer Adapter. Gmail-API bräuchte OAuth und Netzwerk; ein Userscript-Manager kann kein Native Messaging. |
+| Gmail-Adapter | Klick auf „Senden“ und `Strg+Enter` in der Capture-Phase abfangen | Gmail-interne JS-Funktionen patchen | Gmail-JS ist minifiziert und ändert sich ständig; das DOM hat wenigstens stabile Attribute. |
+| Roundcube-Adapter | Seitenskript patcht `rcmail.command('send')` (Roundcube-JS-API) | Klicks auf Senden-Buttons abfangen | `rcmail.command` ist die dokumentierte, Skin-unabhängige Stelle, über die jeder Versand läuft (Button, Menü, Tastenkürzel). |
+| Roundcube-Adresse | In den Erweiterungs-Optionen eintragbar, Content-Script wird zur Laufzeit registriert (`contentScripts.register`, `optional_permissions`) | Feste Adresse im Manifest | Roundcube ist selbst gehostet; die Adresse ändert sich ohne Neusignieren der Erweiterung. |
 | Ort der Erkennung | Zentral im Python-Host | Regeln doppelt in JS in beiden Erweiterungen | Eine Implementierung, eine Regeldatei, ein Test-Korpus. Native Messaging ist lokal (stdin/stdout). |
 | Sprache Host | Python 3, nur Standardbibliothek (`tomllib`, `ctypes`, `json`) | Rust, Go | Auf Fedora vorinstalliert, nichts zu kompilieren, kein `pip`. |
 | Passwortprüfung | PAM über `ctypes` (`libpam.so.0`, Dienst `login`) | polkit (`pkcheck`), eigene PIN | polkit bräuchte eine Policy-Datei unter `/usr/share/polkit-1/actions` und damit Root (widerspricht N6). PAM prüft das echte Systempasswort (N7) und funktioniert für den eigenen Nutzer ohne Root (`unix_chkpwd`). |
@@ -31,7 +34,7 @@ flowchart LR
     TB[tb-extension<br/>onBeforeSend]
   end
   subgraph Firefox
-    GM[gmail-extension<br/>Content-Script + Background]
+    GM[webmail-extension<br/>Gmail- + Roundcube-Adapter]
   end
   TB -- Native Messaging --> H
   GM -- Native Messaging --> H
@@ -51,7 +54,7 @@ flowchart LR
 - **Verantwortung:** Bewertet eine Mail und liefert Score, Verdacht ja/nein und die Treffer.
 - **Schnittstelle:** `classify(mail: MailDraft, rules: Rules) -> Verdict`; `strip_quotes(text: str, html: str | None) -> str`
 - **Vorgehen:**
-  1. Zitate entfernen: Zeilen mit `>`; HTML-Blöcke `blockquote[type=cite]`, `.moz-cite-prefix`, `.gmail_quote`; alles nach „Am … schrieb …:“ / „On … wrote:“ / „-------- Weitergeleitete Nachricht --------“ (R1.5).
+  1. Zitate entfernen: Zeilen mit `>`; HTML-Blöcke `blockquote[type=cite]`, `.moz-cite-prefix`, `.gmail_quote`, Roundcube `blockquote type=cite` und `#_rc_sig` (Signatur); alles nach „Am … schrieb …:“ / „On … wrote:“ / „-------- Weitergeleitete Nachricht --------“ (R1.5).
   2. Text normalisieren: Kleinschreibung, Umlaute vereinheitlichen, Satzweise zerlegen.
   3. Score pro Satz: `food` (Kuchen, Torte, Muffins, Brownies, Croissants, Brötchen, Pizza, Eis, Donuts, cake …) + `offer` (bringe … mit, gebe … aus, spendiere, lade … ein, „geht auf mich“, I'll bring, treat, my shout …) + `timing` (morgen, heute, Freitag, tomorrow …). Ein Satz zählt nur, wenn `food` **und** `offer` treffen; Betreff zählt wie ein Satz.
   4. Bonus `recipients > 3` oder Empfänger passt auf `distribution_patterns` (z. B. `team@`, `alle@`) (R1.3).
@@ -103,15 +106,17 @@ flowchart LR
 - **Berechtigungen:** `compose`, `nativeMessaging`
 - **Erfüllt:** R1.2, R2.1, R2.3, R2.5, R4.5
 
-### gmail-extension (`extensions/gmail/`)
+### webmail-extension (`extensions/webmail/`)
 
-- **Verantwortung:**
-  - Content-Script auf `https://mail.google.com/*`: `click`-Listener (Capture) auf Senden-Buttons und `keydown` für `Strg/⌘+Enter` im Compose-Dialog. Liest Betreff (`input[name=subjectbox]`), Text (contenteditable des Dialogs) und Empfänger (Chips mit `email`-Attribut). Hält das Event an (`preventDefault`, `stopImmediatePropagation`), fragt über das Background-Script den Host, und löst bei `send` den Klick erneut aus (mit internem Freigabe-Flag, damit er nicht erneut abgefangen wird).
-  - Background-Script: hält den Native-Port, leitet Nachrichten weiter.
-  - Für R4.5: `input`-Events im Compose-Dialog mit 1 s Debounce → `check`.
-- **Selektoren:** zentral in `selectors.js`, damit Gmail-Änderungen an einer Stelle angepasst werden.
-- **Berechtigungen:** `nativeMessaging`, Host-Berechtigung `https://mail.google.com/*`
-- **Erfüllt:** R1.2, R2.1, R2.3, R2.5, R4.5
+- **Verantwortung:** Gemeinsamer Ablauf für alle Webmailer: Senden anhalten → `before_send` an den Host → je nach Antwort senden, Entwurf behalten oder verwerfen. Pro Webmailer ein Adapter mit derselben Schnittstelle:
+  `readDraft() -> {subject, plain_text, html, recipients}`, `onSendAttempt(callback)`, `send()`, `discard()`, `onInput(callback)` (für R4.5, 1 s Debounce).
+- **Background-Script:** hält den Native-Port, leitet Nachrichten weiter, registriert das Roundcube-Content-Script für die eingetragenen Adressen.
+- **Gmail-Adapter** (`adapters/gmail.js`, fest auf `https://mail.google.com/*`): `click` (Capture) auf Senden-Buttons und `keydown` für `Strg/⌘+Enter` im Compose-Dialog; Event anhalten (`preventDefault`, `stopImmediatePropagation`), bei Freigabe Klick erneut auslösen (internes Freigabe-Flag). Betreff `input[name=subjectbox]`, Text aus dem contenteditable des Dialogs, Empfänger aus Chips mit `email`-Attribut.
+- **Roundcube-Adapter** (`adapters/roundcube.js`, nur auf eingetragenen Adressen): injiziert ein Seitenskript, das `rcmail.command` umhüllt. Bei `command === 'send'` ohne Freigabe-Flag: per `window.postMessage` an das Content-Script, Antwort abwarten, bei `send` Original aufrufen. Betreff `input[name=_subject]`, Text aus `textarea[name=_message]` bzw. dem TinyMCE-Editor (`tinymce.activeEditor.getContent()`), Empfänger aus den Feldern `_to`, `_cc`, `_bcc`. Verwerfen über `rcmail.command('delete-compose')` bzw. Schließen ohne Speichern.
+- **Optionen-Seite:** Liste der Roundcube-Adressen (z. B. `https://webmail.example.de/`), fordert die Host-Berechtigung dafür an.
+- **Selektoren:** pro Adapter zentral in einer Konstante, damit Änderungen an einer Stelle angepasst werden.
+- **Berechtigungen:** `nativeMessaging`, `storage`, Host-Berechtigung `https://mail.google.com/*`, `optional_permissions` für Roundcube-Adressen.
+- **Erfüllt:** R1.2, R2.1, R2.3, R2.5, R4.5, R4.6
 
 ### installer (`install.sh`, `uninstall.sh`)
 
@@ -122,7 +127,7 @@ flowchart LR
 
 | Entität | Felder | Hinweis |
 |---|---|---|
-| `MailDraft` | `client` (`thunderbird`/`gmail`), `subject`, `plain_text`, `html` (optional), `recipients: list[str]` | Nur im Speicher |
+| `MailDraft` | `client` (`thunderbird`/`gmail`/`roundcube`), `subject`, `plain_text`, `html` (optional), `recipients: list[str]` | Nur im Speicher |
 | `Verdict` | `suspicious: bool`, `score: float`, `hits: list[str]` | `hits` z. B. `["food:kuchen", "offer:bringe mit", "recipients>3"]` |
 | `Attempt` | `id` (UUID), `ts` (ISO 8601), `client`, `subject`, `recipients`, `score`, `outcome` (`cancelled`/`released`/`locked`/`locked_on_detect`), `notified: bool` | Eine Zeile JSON in `attempts.jsonl` |
 | `Rules` | `threshold`, `weights.{food,offer,timing,recipients}`, `food[]`, `offer[]`, `timing[]`, `distribution_patterns[]`, `recipient_limit` (3), `lock_on_detect` (false) | `rules.toml` |
@@ -197,7 +202,7 @@ sequenceDiagram
 | Host antwortet nicht innerhalb 120 s (Dialog offen gelassen) | Wie `cancel` | R2.3 |
 | `zenity` fehlt | Host loggt Fehler, Antwort `cancel` | R2.3 |
 | `loginctl` schlägt fehl | Fallback D-Bus `org.gnome.ScreenSaver.Lock`, Fehler loggen | R2.4 |
-| Gmail-Selektor findet Text/Betreff nicht | Fail-closed wie oben, Warnung in Konsole und Log | R1.2 |
+| Webmail-Adapter findet Text/Betreff bzw. `rcmail` nicht | Fail-closed wie oben, Warnung in Konsole und Log | R1.2 |
 | Logdatei nicht schreibbar | Weiter abfangen, Warnung über `notify-send` | R3.1 |
 
 ## Sicherheit
@@ -213,12 +218,12 @@ sequenceDiagram
 | Ebene | Was | Werkzeug |
 |---|---|---|
 | Unit | `classifier` gegen Korpus `tests/corpus/cake/*.eml` (≥ 30) und `tests/corpus/normal/*.eml` (≥ 50, inkl. „Kuchen ist in der Küche“, Kantinenplan, Rezept-Weiterleitungen); misst N2/N3 | `pytest` (oder `unittest`, falls kein pytest) |
-| Unit | `strip_quotes` mit Thunderbird- und Gmail-HTML-Zitaten | pytest |
+| Unit | `strip_quotes` mit Thunderbird-, Gmail- und Roundcube-Zitaten (HTML und Klartext) | pytest |
 | Unit | `rules` Neuladen bei `mtime`, Fallback bei kaputter Datei | pytest, `tmp_path` |
 | Unit | `host` Protokoll (Längenpräfix, Fehlerantworten), `auth` mit gemocktem zenity/PAM | pytest, `monkeypatch` |
 | Unit | Performance: 10 kB Mail < 200 ms (N4) | pytest-Zeitmessung |
 | Integration | Host als Subprozess, echte Native-Messaging-Frames über stdin/stdout | pytest |
-| E2E (manuell) | Checkliste `docs/e2e-checklist.md`: Thunderbird und Gmail jeweils Kuchenmail senden → Dialog → Abbruch/Freigabe/3x falsch; normale Mail; Entsperren → Benachrichtigung; `ss -tunp` zeigt keinen Socket des Hosts | Hand + Fedora-VM |
+| E2E (manuell) | Checkliste `docs/e2e-checklist.md`: Thunderbird, Gmail und Roundcube (Klartext- und HTML-Editor) jeweils Kuchenmail senden → Dialog → Abbruch/Freigabe/3x falsch; normale Mail; Entsperren → Benachrichtigung; `ss -tunp` zeigt keinen Socket des Hosts | Hand + Fedora-VM |
 | Statisch | Erweiterungen | `web-ext lint` |
 
 ## Abdeckung
@@ -226,11 +231,11 @@ sequenceDiagram
 | Anforderung | Komponente(n) |
 |---|---|
 | R1.1 | classifier, rules |
-| R1.2 | tb-extension, gmail-extension, guard-host |
+| R1.2 | tb-extension, webmail-extension, guard-host |
 | R1.3 | classifier |
 | R1.4 | classifier, default_rules.toml |
 | R1.5 | classifier (`strip_quotes`) |
-| R2.1 | tb-extension, gmail-extension, guard-host |
+| R2.1 | tb-extension, webmail-extension, guard-host |
 | R2.2 | auth |
 | R2.3 | auth, Erweiterungen |
 | R2.4 | auth, lock, Erweiterungen (`discard`) |
@@ -243,6 +248,7 @@ sequenceDiagram
 | R4.3 | rules |
 | R4.4 | unlock-notifier (systemd), installer |
 | R4.5 | Erweiterungen (`check`), guard-host, lock |
+| R4.6 | webmail-extension (Roundcube-Adapter, Optionen-Seite) |
 | N1 | gesamter Host, attempt_log, Sicherheitstest |
 | N2, N3 | classifier + Korpus |
 | N4 | classifier, guard-host (persistenter Port) |
@@ -250,7 +256,7 @@ sequenceDiagram
 | N6 | installer |
 | N7 | auth |
 
-Lücken: keine Anforderung ohne Komponente. R1.2 und N3 für Gmail hängen an den DOM-Selektoren (Risiko 1).
+Lücken: keine Anforderung ohne Komponente. R1.2 für Gmail und Roundcube hängt an den Adaptern (Risiken 1 und 7).
 
 ## Risiken & offene Punkte
 
@@ -259,6 +265,7 @@ Lücken: keine Anforderung ohne Komponente. R1.2 und N3 für Gmail hängen an de
 3. **Fail-closed vs. fail-open**, wenn der Host nicht läuft: Empfehlung fail-closed (Senden blockiert, Hinweis). Kehrseite: Ist das Tool kaputt, kannst du aus Thunderbird/Gmail erst nach Deaktivieren der Erweiterung senden.
 4. **Thunderbird-Native-Messaging-Pfad** auf Linux nicht offiziell dokumentiert gefunden → Installer legt das Manifest in beide Orte; Spike T2 bestätigt.
 5. **`onBeforeSend` und lange Dialoge:** Die API nennt Einschränkungen für asynchrone Listener. Spike T2 prüft, dass ein offener Passwortdialog (bis 120 s) das Senden zuverlässig anhält.
-6. **Annahme:** Gmail läuft in Firefox (offene Frage in requirements.md).
+6. **Annahme:** Gmail und Roundcube laufen in Firefox (offene Frage in requirements.md).
+7. **Roundcube-Version und Skin:** `rcmail.command` gibt es in allen aktuellen Versionen (1.4 bis 1.6, Skins Elastic und Larry), aber Feldnamen des Editors können abweichen. Der Spike T2 prüft das an deiner Instanz; dafür brauche ich die Adresse bzw. Version.
 
 Quellen: [Thunderbird compose API](https://webextension-api.thunderbird.net/en/115/compose.html), [MDN Native manifests](https://developer.mozilla.org/en-US/Add-ons/WebExtensions/Native_manifests), [Firefox Signing](https://extensionworkshop.com/documentation/publish/signing-and-distribution-overview/)

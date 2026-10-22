@@ -1,6 +1,6 @@
 # Anforderungen: Kuchenmail-Guard
 
-> Status: Freigegeben (2026-10-22)
+> Status: Freigegeben (2026-10-22), geändert 2026-10-22: Roundcube ergänzt (R4.6)
 
 ## Ziel
 
@@ -60,6 +60,7 @@ Wenn Linus seinen Fedora-Rechner kurz entsperrt stehen lässt, schreiben Kollege
 - **R4.3** FALLS die Konfigurationsdatei fehlt oder fehlerhaft ist, DANN SOLL das System mit eingebauten Standardregeln weiterlaufen und eine Warnung ins Log schreiben.
 - **R4.4** Das System SOLL nach der Anmeldung automatisch starten.
 - **R4.5** WO der Schalter „Bildschirm bei Verdacht sofort sperren“ aktiviert ist, SOLL das System den Bildschirm bereits beim Erkennen (R1.1) sperren, nicht erst beim Senden.
+- **R4.6** Das System SOLL neben Thunderbird und Gmail auch Roundcube-Webmail unter einer oder mehreren vom Besitzer konfigurierten Adressen abdecken.
 
 ## Nicht-funktionale Anforderungen
 
@@ -76,7 +77,7 @@ Wenn Linus seinen Fedora-Rechner kurz entsperrt stehen lässt, schreiben Kollege
 ## Randbedingungen
 
 - Fedora Linux, aktuelle Version, GNOME auf Wayland.
-- Mail-Clients: Thunderbird und Gmail als Webmail im Browser (**Annahme:** Firefox).
+- Mail-Clients: Thunderbird, Gmail und Roundcube als Webmail im Browser (**Annahme:** Firefox).
 - Einzelner Nutzer, einzelner Rechner, keine Server-Komponente.
 - Keine Vorgabe zur Programmiersprache.
 - Keine Deadline.
@@ -92,7 +93,8 @@ Wenn Linus seinen Fedora-Rechner kurz entsperrt stehen lässt, schreiben Kollege
 
 ## Offene Fragen
 
-- [x] Mail-Client: Thunderbird und Gmail im Browser (geklärt 2026-10-22).
+- [x] Mail-Clients: Thunderbird, Gmail und Roundcube im Browser (geklärt 2026-10-22).
 - [x] GNOME auf Wayland, Freigabe per Linux-Passwort (bestätigt 2026-10-22).
-- [ ] **Annahme:** Gmail läuft in Firefox, nicht in Chrome/Chromium. — Linus
+- [ ] **Annahme:** Gmail und Roundcube laufen in Firefox, nicht in Chrome/Chromium. — Linus
+- [ ] Unter welcher Adresse läuft dein Roundcube (z. B. `webmail.example.de`), und welche Version bzw. welches Skin? — Linus
 - [ ] Sollen auch Chat-Tools (Teams, Slack) abgedeckt werden? Aktuell Out of Scope. — Linus
