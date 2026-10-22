@@ -1,6 +1,6 @@
 # Anforderungen: Kuchenmail-Guard
 
-> Status: Entwurf
+> Status: Freigegeben (2026-10-22)
 
 ## Ziel
 
@@ -75,7 +75,8 @@ Wenn Linus seinen Fedora-Rechner kurz entsperrt stehen lässt, schreiben Kollege
 
 ## Randbedingungen
 
-- Fedora Linux, aktuelle Version, GNOME auf Wayland (**Annahme**).
+- Fedora Linux, aktuelle Version, GNOME auf Wayland.
+- Mail-Clients: Thunderbird und Gmail als Webmail im Browser (**Annahme:** Firefox).
 - Einzelner Nutzer, einzelner Rechner, keine Server-Komponente.
 - Keine Vorgabe zur Programmiersprache.
 - Keine Deadline.
@@ -91,7 +92,7 @@ Wenn Linus seinen Fedora-Rechner kurz entsperrt stehen lässt, schreiben Kollege
 
 ## Offene Fragen
 
-- [ ] **Welchen Mail-Client nutzt du?** Thunderbird, Evolution, Webmail im Browser (Outlook Web, Gmail) oder mehrere? Davon hängt ab, wo das Tool eingreift. — Linus
-- [ ] **Annahme:** GNOME auf Wayland. Stimmt das? — Linus
-- [ ] **Annahme:** Freigabe per Linux-Passwort ist okay (R2.2). Alternative wäre z. B. ein eigener PIN. — Linus
+- [x] Mail-Client: Thunderbird und Gmail im Browser (geklärt 2026-10-22).
+- [x] GNOME auf Wayland, Freigabe per Linux-Passwort (bestätigt 2026-10-22).
+- [ ] **Annahme:** Gmail läuft in Firefox, nicht in Chrome/Chromium. — Linus
 - [ ] Sollen auch Chat-Tools (Teams, Slack) abgedeckt werden? Aktuell Out of Scope. — Linus
