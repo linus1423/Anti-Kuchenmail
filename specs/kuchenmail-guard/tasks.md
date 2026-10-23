@@ -18,7 +18,7 @@ Ab Meilenstein 2 gibt es etwas Lauffähiges: ein Kommandozeilen-Check, der sagt,
   - Was: Wegwerf-Erweiterungen, die nur loggen und blockieren, für alle vier Clients. Prüfen: (a) Thunderbird `onBeforeSend` hält das Senden 120 s an und liefert Betreff, Text, Empfänger; (b) Native-Messaging-Manifest-Pfad für Thunderbird auf Fedora; (c) Gmail, Outlook im Web und Roundcube: Senden per Klick und Tastenkürzel abfangbar, Betreff/Text/Empfänger lesbar, Senden nach Freigabe wieder auslösbar. Ergebnisse und funktionierende Selektoren in „Umsetzungsnotizen“.
   - Dateien: `spikes/thunderbird/`, `spikes/webmail/`, `specs/kuchenmail-guard/tasks.md`
   - Fertig wenn: Für jeden der vier Clients steht in den Notizen „abfangbar ja/nein“ plus Selektoren; bei „nein“ ist eine Design-Anpassung vorgeschlagen.
-  - Hinweis: Muss auf Linus' Rechner mit seinen Konten laufen (Anleitung liefere ich mit). Braucht Roundcube-Adresse und Outlook-Kontotyp.
+  - Hinweis: Muss auf Linus' Rechner mit seinen Konten laufen. **Stand 2026-10-23:** Test-Kit und Anleitung liegen in `spikes/` (README), Durchführung durch Linus steht aus.
   - _Req: R1.2, R2.1, R4.6, R4.7_
 
 ## Meilenstein 2: Erkennung (erster lauffähiger Stand)
@@ -210,3 +210,4 @@ Jede Anforderung ist mindestens einem Task zugeordnet; die Abhängigkeiten sind 
 ## Umsetzungsnotizen
 
 - **T1 (2026-10-23):** Testrunner ist `unittest` aus der Standardbibliothek (`make test`), damit auf Fedora kein `pytest` nachinstalliert werden muss; das Design lässt das ausdrücklich zu. Spätere Tests daher als `unittest.TestCase` schreiben (laufen auch unter pytest). `guard` bricht unter Python < 3.11 mit klarer Meldung ab (wegen `tomllib`). Geprüft mit Python 3.13 im Cloud-Container, noch nicht auf Linus' Fedora.
+- **T2 (vorbereitet):** `web-ext lint` meldet für die Thunderbird-Erweiterung erwartbar „UNSUPPORTED_API compose.onBeforeSend“ (Linter kennt nur Firefox-APIs). Firefox verlangt für neue Erweiterungen `browser_specific_settings.gecko.data_collection_permissions`; in allen Firefox-Manifesten `{"required": ["none"]}` setzen.
