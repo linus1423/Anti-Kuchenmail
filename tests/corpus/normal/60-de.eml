@@ -1,0 +1,24 @@
+From: linus@firma.example
+To: anna@firma.example, ben@firma.example, carla@firma.example,
+ dirk@firma.example, eva@firma.example
+Subject: Re: Eis (Roundcube)
+MIME-Version: 1.0
+Content-Type: multipart/alternative;
+ boundary="===============5292048654946299198=="
+
+--===============5292048654946299198==
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+
+Super, danke!
+
+--===============5292048654946299198==
+Content-Type: text/html; charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+MIME-Version: 1.0
+
+<html><body><p>Super, danke!</p><p>Am 21.10.2026 10:00, schrieb Max:</p><bloc=
+kquote type=3D"cite" style=3D"padding: 0 0.4em">Morgen gebe ich eine Runde Ei=
+s aus!</blockquote></body></html>
+
+--===============5292048654946299198==--

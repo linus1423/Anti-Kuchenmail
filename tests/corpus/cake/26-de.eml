@@ -1,0 +1,22 @@
+From: linus@firma.example
+To: team@firma.example
+Subject: Info
+MIME-Version: 1.0
+Content-Type: multipart/alternative;
+ boundary="===============0597643399414468328=="
+
+--===============0597643399414468328==
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+
+ 
+
+--===============0597643399414468328==
+Content-Type: text/html; charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+MIME-Version: 1.0
+
+<html><body><div>Hallo zusammen,</div><div><br></div><div>morgen fr=C3=BCh br=
+inge ich <b>Muffins</b> mit!</div></body></html>
+
+--===============0597643399414468328==--

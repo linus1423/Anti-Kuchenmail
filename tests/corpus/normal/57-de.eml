@@ -1,0 +1,25 @@
+From: linus@firma.example
+To: anna@firma.example, ben@firma.example, carla@firma.example,
+ dirk@firma.example, eva@firma.example
+Subject: Re: Kuchen morgen (Gmail)
+MIME-Version: 1.0
+Content-Type: multipart/alternative;
+ boundary="===============7331570622607649322=="
+
+--===============7331570622607649322==
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+
+Danke, klingt super!
+
+--===============7331570622607649322==
+Content-Type: text/html; charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+MIME-Version: 1.0
+
+<div dir=3D"ltr">Danke, klingt super!</div><br><div class=3D"gmail_quote"><di=
+v dir=3D"ltr" class=3D"gmail_attr">Am Mi., 21. Okt. 2026 um 10:00 Uhr schrieb=
+ Max &lt;max@firma.example&gt;:<br></div><blockquote class=3D"gmail_quote">Ic=
+h bringe morgen Kuchen f=C3=BCr alle mit!</blockquote></div>
+
+--===============7331570622607649322==--

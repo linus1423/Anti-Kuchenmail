@@ -1,0 +1,8 @@
+From: linus@firma.example
+To: all@company.example
+Subject: Welcome
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+MIME-Version: 1.0
+
+Please welcome Sarah, who joins the data team today.

@@ -1,0 +1,25 @@
+From: linus@firma.example
+To: anna@firma.example, ben@firma.example, carla@firma.example,
+ dirk@firma.example, eva@firma.example
+Subject: RE: Cake (Outlook)
+MIME-Version: 1.0
+Content-Type: multipart/alternative;
+ boundary="===============4372630856469404516=="
+
+--===============4372630856469404516==
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+
+Sounds great, thanks!
+
+--===============4372630856469404516==
+Content-Type: text/html; charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+MIME-Version: 1.0
+
+<html><body><div>Sounds great, thanks!</div><div id=3D"appendonsend"></div><h=
+r style=3D"display:inline-block;width:98%"><div id=3D"divRplyFwdMsg"><b>From:=
+</b> Max<br><b>Sent:</b> Wednesday<br><b>Subject:</b> Cake</div><div>I'll bri=
+ng cake for everyone tomorrow!</div></body></html>
+
+--===============4372630856469404516==--

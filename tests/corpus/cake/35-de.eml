@@ -1,0 +1,29 @@
+From: linus@firma.example
+To: team@firma.example
+Subject: Wichtig
+MIME-Version: 1.0
+Content-Type: multipart/alternative;
+ boundary="===============0465440164694119678=="
+
+--===============0465440164694119678==
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+
+Hallo zusammen,
+
+bitte nicht vergessen:
+Morgen früh gibt es Kuchen.
+Ich bringe ihn mit.
+
+Gruß
+
+--===============0465440164694119678==
+Content-Type: text/html; charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+MIME-Version: 1.0
+
+<html><body><p>Hallo zusammen,</p><p>bitte nicht vergessen:<br>Morgen fr=C3=
+=BCh gibt es Kuchen.<br>Ich bringe ihn mit.</p><p>Gru=C3=9F</p><div id=3D"_rc=
+_sig">-- <br>Linus</div></body></html>
+
+--===============0465440164694119678==--

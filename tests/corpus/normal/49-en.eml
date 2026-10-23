@@ -1,0 +1,8 @@
+From: linus@firma.example
+To: all@company.example
+Subject: Password reminder
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+MIME-Version: 1.0
+
+Your password expires in 7 days. Please change it via the self-service portal.
