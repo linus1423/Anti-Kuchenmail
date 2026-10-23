@@ -2,13 +2,13 @@
 
 > Status: Freigegeben (2026-10-23) · Basis: requirements.md, design.md (beide freigegeben 2026-10-22)
 
-Fortschritt: 0 / 20 erledigt
+Fortschritt: 1 / 20 erledigt
 
 Ab Meilenstein 2 gibt es etwas Lauffähiges: ein Kommandozeilen-Check, der sagt, ob eine Mail eine Kuchenmail ist. Ab Meilenstein 4 ist Thunderbird geschützt, danach folgen die Webmailer.
 
 ## Meilenstein 1: Fundament und Risiko-Check
 
-- [ ] **T1** Projektgerüst
+- [x] **T1** Projektgerüst
   - Was: Python-Paket `guard/` ohne Fremdabhängigkeiten, Testlauf, `Makefile` mit `test` und `lint` (`python -m compileall`, `web-ext lint` später), `.gitignore`, README mit Kurzbeschreibung.
   - Dateien: `guard/__init__.py`, `tests/test_smoke.py`, `Makefile`, `.gitignore`, `README.md`
   - Fertig wenn: `make test` läuft auf Fedora mit System-Python grün (1 Smoke-Test).
@@ -209,4 +209,4 @@ Jede Anforderung ist mindestens einem Task zugeordnet; die Abhängigkeiten sind 
 
 ## Umsetzungsnotizen
 
-<Erkenntnisse während der Umsetzung, die spätere Tasks betreffen.>
+- **T1 (2026-10-23):** Testrunner ist `unittest` aus der Standardbibliothek (`make test`), damit auf Fedora kein `pytest` nachinstalliert werden muss; das Design lässt das ausdrücklich zu. Spätere Tests daher als `unittest.TestCase` schreiben (laufen auch unter pytest). `guard` bricht unter Python < 3.11 mit klarer Meldung ab (wegen `tomllib`). Geprüft mit Python 3.13 im Cloud-Container, noch nicht auf Linus' Fedora.
