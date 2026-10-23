@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <title>Kuchenmail-Guard: Roundcube</title>
+  <style>
+    body { font: 14px/1.4 system-ui, sans-serif; margin: 16px; max-width: 560px; }
+    ul { padding: 0; list-style: none; }
+    li { display: flex; justify-content: space-between; align-items: center; padding: 6px 0; border-bottom: 1px solid #ddd; }
+    form { display: flex; gap: 8px; margin-top: 12px; }
+    input { flex: 1; padding: 6px; }
+    .error { color: #b00020; }
+  </style>
+</head>
+<body>
+  <h1>Roundcube-Adressen</h1>
+  <p>Gmail und Outlook im Web sind immer geschützt. Für Roundcube hier die Adresse jeder Instanz eintragen, z. B. <code>https://webmail.example.de</code>.</p>
+  <ul id="origins"></ul>
+  <form id="add">
+    <input id="url" type="url" placeholder="https://webmail.example.de" required>
+    <button type="submit">Hinzufügen</button>
+  </form>
+  <p id="message" role="status"></p>
+  <script src="options.js"></script>
+</body>
+</html>

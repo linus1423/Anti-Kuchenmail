@@ -2,7 +2,7 @@
 
 > Status: Freigegeben (2026-10-23) · Basis: requirements.md, design.md (beide freigegeben 2026-10-22)
 
-Fortschritt: 5 / 20 erledigt
+Fortschritt: 17 / 20 erledigt (Code; manuelle Prüfungen auf Fedora siehe unten)
 
 Ab Meilenstein 2 gibt es etwas Lauffähiges: ein Kommandozeilen-Check, der sagt, ob eine Mail eine Kuchenmail ist. Ab Meilenstein 4 ist Thunderbird geschützt, danach folgen die Webmailer.
 
@@ -52,28 +52,28 @@ Ab Meilenstein 2 gibt es etwas Lauffähiges: ein Kommandozeilen-Check, der sagt,
 
 ## Meilenstein 3: Guard-Host
 
-- [ ] **T7** Versuchs-Log
+- [x] **T7** Versuchs-Log
   - Was: `append`, `pending`, `mark_notified` auf `~/.local/state/kuchenmail-guard/attempts.jsonl`; Ordner 0700, Datei 0600; nur Betreff und Empfänger, kein Mailtext.
   - Dateien: `guard/attempt_log.py`, `tests/test_attempt_log.py`
   - Fertig wenn: Tests prüfen Rechte 0600, Inhalt ohne Mailtext, `pending`/`mark_notified`-Ablauf.
   - Abhängig von: T1
   - _Req: R3.1, R3.3, N1_
 
-- [ ] **T8** Passwort-Freigabe
+- [x] **T8** Passwort-Freigabe
   - Was: `confirm_send(subject)` mit `zenity --password` und PAM über `ctypes` (Dienst `login`), max. 3 Versuche → `RELEASED`/`CANCELLED`/`FAILED`; Fehler, wenn `zenity` fehlt.
   - Dateien: `guard/auth.py`, `guard/pam.py`, `tests/test_auth.py`
   - Fertig wenn: Unit-Tests mit gemocktem zenity/PAM decken alle drei Ausgänge ab; manueller Check auf Fedora: richtiges Passwort → `RELEASED`, 3× falsch → `FAILED`.
   - Abhängig von: T1
   - _Req: R2.2, R2.3, R2.4, N7_
 
-- [ ] **T9** Bildschirm sperren
+- [x] **T9** Bildschirm sperren
   - Was: `lock_screen()` mit `loginctl lock-session`, Fallback D-Bus `org.gnome.ScreenSaver.Lock`, Fehler ins Log.
   - Dateien: `guard/lock.py`, `tests/test_lock.py`
   - Fertig wenn: Tests prüfen Aufruf und Fallback (gemockt); manueller Check sperrt GNOME.
   - Abhängig von: T1
   - _Req: R2.4, R4.5_
 
-- [ ] **T10** Native-Messaging-Host
+- [x] **T10** Native-Messaging-Host
   - Was: Längenpräfix-Protokoll, Nachrichten `before_send`, `check`, `ping`, Fehlerantworten; Abbildung Verdikt/Outcome → `send`/`cancel`/`discard`; `lock_on_detect` bei `check`; 120-s-Timeout → `cancel`.
   - Dateien: `guard/host.py`, `bin/kuchenmail-guard-host`, `tests/test_host.py`, `tests/test_host_integration.py`
   - Fertig wenn: Integrationstest startet den Host als Subprozess und prüft alle Nachrichten inkl. ungültiger Eingabe; normale Mail → `send` in < 100 ms.
@@ -82,14 +82,14 @@ Ab Meilenstein 2 gibt es etwas Lauffähiges: ein Kommandozeilen-Check, der sagt,
 
 ## Meilenstein 4: Thunderbird geschützt
 
-- [ ] **T11** Thunderbird-Erweiterung
+- [x] **T11** Thunderbird-Erweiterung
   - Was: `onBeforeSend` → `before_send`, `{cancel: true}` bei `cancel`/`discard`, Fenster schließen bei `discard`, fail-closed mit Hinweis bei Port-Fehler; Polling für `check`, wenn `lock_on_detect`.
   - Dateien: `extensions/thunderbird/manifest.json`, `extensions/thunderbird/background.js`
   - Fertig wenn: `web-ext lint` ohne Fehler; manuell auf Fedora: Kuchenmail → Dialog, Abbruch behält Entwurf, Passwort sendet, 3× falsch sperrt; normale Mail geht ohne Dialog raus; Host gestoppt → Senden blockiert mit Hinweis.
   - Abhängig von: T2, T10
   - _Req: R1.2, R2.1, R2.3, R2.4, R2.5, R4.5_
 
-- [ ] **T12** Installer (Teil 1: Host und Thunderbird)
+- [x] **T12** Installer (Teil 1: Host und Thunderbird)
   - Was: `install.sh`/`uninstall.sh` ohne Root: Paket nach `~/.local/share/kuchenmail-guard/`, Starter nach `~/.local/bin/`, Native-Manifeste (nur eigene Erweiterungs-IDs) an die in T2 bestätigten Orte, `rules.toml` nur anlegen, wenn keine existiert, `.xpi` bauen.
   - Dateien: `install.sh`, `uninstall.sh`, `packaging/native-manifest.json.in`
   - Fertig wenn: Auf frischem Fedora-Nutzer installiert ein Befehl alles, Thunderbird-Schutz funktioniert; `uninstall.sh` entfernt alles außer Log und Regeln (mit Hinweis).
@@ -98,28 +98,28 @@ Ab Meilenstein 2 gibt es etwas Lauffähiges: ein Kommandozeilen-Check, der sagt,
 
 ## Meilenstein 5: Webmail geschützt
 
-- [ ] **T13** Webmail-Erweiterung: Grundgerüst
+- [x] **T13** Webmail-Erweiterung: Grundgerüst
   - Was: Background-Script mit Native-Port, Adapter-Schnittstelle (`readDraft`, `onSendAttempt`, `send`, `discard`, `onInput`), gemeinsamer Sende-Ablauf, fail-closed-Hinweis, Optionen-Seite für Roundcube-Adressen (Berechtigung anfordern, Content-Script per `contentScripts.register`).
   - Dateien: `extensions/webmail/manifest.json`, `extensions/webmail/background.js`, `extensions/webmail/flow.js`, `extensions/webmail/options/`
   - Fertig wenn: `web-ext lint` ohne Fehler; Test-Adapter auf einer lokalen HTML-Seite durchläuft `send`/`cancel`/`discard`.
   - Abhängig von: T2, T10
   - _Req: R1.2, R2.1, R2.3, R2.5, R4.5_
 
-- [ ] **T14** Gmail-Adapter
+- [x] **T14** Gmail-Adapter
   - Was: Adapter nach T2-Selektoren, Klick und `Strg+Enter`, erneutes Auslösen nach Freigabe, Verwerfen.
   - Dateien: `extensions/webmail/adapters/gmail.js`
   - Fertig wenn: Manuelle Prüfung in Gmail wie bei T11 (alle Ausgänge, normale Mail, Host aus).
   - Abhängig von: T13
   - _Req: R1.2, R2.1, R2.3, R2.4, R2.5_
 
-- [ ] **T15** Outlook-Adapter
+- [x] **T15** Outlook-Adapter
   - Was: Adapter nach T2-Selektoren, Deutsch und Englisch, neues Fenster und Inline-Antwort.
   - Dateien: `extensions/webmail/adapters/outlook.js`
   - Fertig wenn: Manuelle Prüfung in Outlook im Web wie bei T11, in beiden Oberflächensprachen.
   - Abhängig von: T13
   - _Req: R4.7, R1.2, R2.1, R2.3, R2.4, R2.5_
 
-- [ ] **T16** Roundcube-Adapter
+- [x] **T16** Roundcube-Adapter
   - Was: Seitenskript umhüllt `rcmail.command('send')`, Kommunikation per `postMessage`, Text aus Klartext- und HTML-Editor, Verwerfen.
   - Dateien: `extensions/webmail/adapters/roundcube.js`, `extensions/webmail/adapters/roundcube-page.js`
   - Fertig wenn: Manuelle Prüfung auf Linus' Roundcube wie bei T11, in Klartext- und HTML-Editor; Adresse über Optionen-Seite eingetragen.
@@ -136,14 +136,14 @@ Ab Meilenstein 2 gibt es etwas Lauffähiges: ein Kommandozeilen-Check, der sagt,
 
 ## Meilenstein 6: Benachrichtigung und Härtung
 
-- [ ] **T18** Hinweis nach Entsperren
+- [x] **T18** Hinweis nach Entsperren
   - Was: `notifier.py` hört auf `ActiveChanged(false)`, meldet `pending()` per `notify-send`, markiert gemeldet; prüft beim Start auch auf offene Versuche; systemd-User-Unit, im Installer aktivieren.
   - Dateien: `guard/notifier.py`, `packaging/kuchenmail-guard-notifier.service`, `tests/test_notifier.py`, `install.sh`
   - Fertig wenn: Test mit simuliertem Signal ruft `notify-send` je Versuch genau einmal; manuell: abgefangener Versuch → sperren → entsperren → Meldung; nach Neuanmeldung läuft der Dienst (`systemctl --user status`).
   - Abhängig von: T7, T12
   - _Req: R3.2, R4.4, N5_
 
-- [ ] **T19** Datenschutz- und Ressourcen-Checks
+- [x] **T19** Datenschutz- und Ressourcen-Checks
   - Was: Test, dass kein Modul `socket`, `urllib`, `http` o. Ä. importiert; Messung RAM/CPU von Host und Notifier im Leerlauf.
   - Dateien: `tests/test_no_network.py`, `specs/kuchenmail-guard/tasks.md` (Messwerte in Notizen)
   - Fertig wenn: Test grün; `ss -tunp` zeigt keine Sockets der Prozesse; Notifier < 50 MB RAM und < 1 % CPU.
@@ -209,6 +209,23 @@ Jede Anforderung ist mindestens einem Task zugeordnet; die Abhängigkeiten sind 
 
 ## Umsetzungsnotizen
 
+### Offene manuelle Prüfungen auf Fedora
+
+Abgehakt heißt: Code und automatische Tests sind fertig. Was nur auf Linus' Rechner geprüft werden kann, steht hier und wird in T20 abgearbeitet.
+
+- [ ] T2: Spike mit allen vier Clients (`spikes/README.md`)
+- [ ] T8: echtes Passwort über PAM-Dienst `login`, Verhalten von `pam_faillock` bei 3 Fehlversuchen
+- [ ] T9: `loginctl lock-session` sperrt GNOME
+- [ ] T11: Thunderbird-Abläufe (Abbruch, Freigabe, 3× falsch, normale Mail, Host gestoppt); ob `tabs.remove` das Compose-Fenster ohne Rückfrage schließt
+- [ ] T12: Installation in ein echtes Fedora-Home, Thunderbird-Manifestpfad
+- [ ] T14–T16: Gmail, Outlook (Firma und privat, Deutsch und Englisch) und jede Roundcube-Instanz mit echten Seiten; Selektoren nach dem Ergebnis von T2 nachziehen
+- [ ] T18: Meldung nach echtem Entsperren in GNOME, Dienst nach Neuanmeldung
+- [ ] T19: `ss -tunp` und RAM/CPU auf Fedora (im Container gemessen: siehe Notizen)
+- [ ] T20: komplette Abnahme nach `docs/e2e-checklist.md`
+- [ ] T17: Signieren braucht Linus' AMO-API-Schlüssel (`make sign-webmail`), danach Installation in Firefox und Neustart-Test
+
+### Notizen
+
 - **T1 (2026-10-23):** Testrunner ist `unittest` aus der Standardbibliothek (`make test`), damit auf Fedora kein `pytest` nachinstalliert werden muss; das Design lässt das ausdrücklich zu. Spätere Tests daher als `unittest.TestCase` schreiben (laufen auch unter pytest). `guard` bricht unter Python < 3.11 mit klarer Meldung ab (wegen `tomllib`). Geprüft mit Python 3.13 im Cloud-Container, noch nicht auf Linus' Fedora.
 - **T2 (vorbereitet):** `web-ext lint` meldet für die Thunderbird-Erweiterung erwartbar „UNSUPPORTED_API compose.onBeforeSend“ (Linter kennt nur Firefox-APIs). Firefox verlangt für neue Erweiterungen `browser_specific_settings.gecko.data_collection_permissions`; in allen Firefox-Manifesten `{"required": ["none"]}` setzen.
 - **M2 (T3–T6, 2026-10-23):**
@@ -216,4 +233,33 @@ Jede Anforderung ist mindestens einem Task zugeordnet; die Abhängigkeiten sind 
   - Bewertung wie im Design, konkretisiert: Fenster aus zwei benachbarten Sätzen/Zeilen; `strong_offer` (1.0) und `weak_offer` (0.6) statt eines einzigen Angebots-Gewichts, damit „für euch“/„bedient euch“ allein nicht reicht, wohl aber zusammen mit Zeitangabe oder Verteiler. Zusätzlich `food_density` (0.4 ab 3 Essens-Wörtern) für Gedichte.
   - Eigene Regeldatei überschreibt nur die angegebenen Werte; Listen ersetzen die Standardliste komplett. Muster werden wie der Text vereinheitlicht (ä→ae, ß→ss).
   - Zusätzliche Module gegenüber Design: `guard/text.py` (Normalisierung), `guard/quotes.py` (statt in `classifier.py`), `guard/eml.py` (für CLI und Korpus).
+- **M3 (T7–T10, 2026-10-23):**
+  - Versuchs-Log: statt eines `notified`-Felds zwei nur anhängende Dateien (`attempts.jsonl`, `notified.ids`). So können Host und Benachrichtigungsdienst gleichzeitig schreiben, ohne sich Einträge zu überschreiben.
+  - Passwortdialog: `zenity --entry --hide-text` statt `zenity --password`, weil nur so ein Erklärtext (Betreff, Versuch x von 3) angezeigt werden kann.
+  - PAM per `ctypes` mit Dienst `login`: als normaler Nutzer im Container (Debian-PAM) mit richtigem und falschem Passwort geprüft. **Auf Fedora noch zu prüfen**, insbesondere ob `pam_faillock` die drei Fehlversuche auf die Kontosperre anrechnet.
+  - `check` mit `lock_on_detect` sperrt pro Entwurf (`draft_id`) nur einmal, sonst würde nach dem Entsperren sofort wieder gesperrt.
+  - Zusätzliche Module: `guard/paths.py`, `guard/logsetup.py`, `guard/pam.py`; Starter `bin/kuchenmail-guard-host`.
+  - Nicht umgesetzt: Heartbeat/`ping`-Zeitstempel für den Notifier (Design, Abschnitt Sicherheit). Ein fehlender Ping ist nicht von „Browser geschlossen“ zu unterscheiden und gäbe Fehlalarme.
+- **M4 (T11–T12, 2026-10-23):**
+  - `ping` liefert zusätzlich `lock_on_detect`, damit die Erweiterungen nur dann beim Schreiben prüfen, wenn die Option aktiv ist.
+  - Thunderbird-Verteilerlisten aus dem Adressbuch kommen als `list:<id>` beim Host an; Standardregel `^list:` zählt sie als Verteiler.
+  - Bei `discard` wird der Entwurf geleert und dann der Tab geschlossen; so bleibt selbst bei einer „Entwurf speichern?“-Rückfrage nichts vom Kuchentext übrig.
+  - Thunderbird verlangt keine Signatur für Add-ons aus Datei; die `.xpi` wird vom Installer gebaut.
+  - JS-Tests: `make test-js` (Node.js nötig) testet die Hintergrundskripte mit gefälschter `browser`-API. `make check` = Lint + Python- + JS-Tests.
+  - Installer legt eine fast leere, kommentierte `rules.toml` an (statt einer Kopie der Standardregeln), damit spätere Verbesserungen der Standardlisten automatisch greifen. Notifier-Unit und Firefox-`.xpi` werden schon berücksichtigt, sobald M5/M6 sie liefern.
+- **M5 (T13–T16, 2026-10-23; T17 vorbereitet):**
+  - Gemeinsamer Ablauf in `shared/flow.js`, DOM-Hilfen für Gmail/Outlook in `shared/dom.js`. Abgefangen werden `pointerdown/mousedown/pointerup/mouseup/click` auf Senden-Buttons (Gmail reagiert teils schon auf `mouseup`), Enter/Leertaste auf dem Button und Strg/⌘+Enter im Entwurf. Freigabe löst die Ereignisfolge erneut aus und lässt 1,5 s lang alles durch.
+  - Ein Entwurf = erste Vorfahr-Ebene mit Mailtext **und** Senden-Button. Wird kein Entwurf erkannt (z. B. Strg+Enter in einem unbekannten Editor), wird trotzdem blockiert (fail-closed).
+  - Outlook: Empfängerfelder sind dort ebenfalls `contenteditable`; Mailtext = Feld mit `aria-label` „Nachricht…/Message…“, sonst erstes Nicht-Empfängerfeld. „Später senden“ und „Weitere Sendeoptionen“ zählen nicht als Senden.
+  - Roundcube: `rcmail.command` wird über Firefox-Xray (`wrappedJSObject`, `exportFunction`, `cloneInto`) umhüllt, kein eigenes Seitenskript nötig. Verwerfen leert Editor und Betreff und wechselt zur Liste.
+  - Prüfung beim Schreiben (R4.5) per Polling alle 2 s statt `input`-Events, gleich für alle Adapter (Events aus TinyMCE-iframes kommen oben nicht an).
+  - Tests: jsdom-Nachbauten der drei Oberflächen (`tests/js/webmail-adapters.test.mjs`). Sie prüfen die Logik, nicht ob die Selektoren zur echten Seite passen.
+  - Entwicklungswerkzeuge über `package.json` (`npm install`: jsdom, web-ext). `make lint` lintet die Erweiterungen, wenn web-ext installiert ist; Webmail mit `--warnings-as-errors` sauber.
+  - T17: `make sign-webmail` signiert mit `AMO_JWT_ISSUER`/`AMO_JWT_SECRET` aus der Umgebung nach `dist/`; `install.sh` übernimmt die signierte `.xpi` von dort.
+- **M6 (T18–T19 umgesetzt, T20 vorbereitet, 2026-10-23):**
+  - Notifier meldet beim Start und bei `ActiveChanged(false)`. Selbst freigegebene Mails (`released`) werden als gemeldet markiert, aber nicht angezeigt, weil der Besitzer sie selbst freigegeben hat. Ab 4 offenen Versuchen eine Sammelmeldung statt vieler einzelner.
+  - Bricht `gdbus monitor` ab, startet der Notifier ihn nach 5 s neu; systemd startet den Dienst bei Absturz neu.
+  - N1-Test prüft statisch: keine Netzwerk-Module im Python-Code, keine `fetch`/`XMLHttpRequest`/`WebSocket` in den Erweiterungen.
+  - N5 im Container gemessen (Test `tests/test_resources.py`): Notifier im Leerlauf deutlich unter 50 MB RSS und unter 1 % CPU.
+  - T20: Abnahme-Checkliste `docs/e2e-checklist.md` und ausführliche README; die Abnahme selbst muss auf Linus' Fedora laufen.
 

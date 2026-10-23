@@ -1,0 +1,7 @@
+{
+  "name": "kuchenmail_guard",
+  "description": "Kuchenmail-Guard: lokale Prüfung von Mails vor dem Senden",
+  "path": "@HOST_PATH@",
+  "type": "stdio",
+  "allowed_extensions": ["thunderbird@kuchenmail-guard", "webmail@kuchenmail-guard"]
+}

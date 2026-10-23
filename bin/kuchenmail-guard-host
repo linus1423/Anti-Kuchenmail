@@ -1,0 +1,10 @@
+#!/usr/bin/python3 -I
+"""Startet den Native-Messaging-Host. Das Paket liegt eine Ebene über bin/."""
+import os
+import sys
+
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
+
+from guard.host import main  # noqa: E402
+
+main()
