@@ -51,7 +51,7 @@ build_xpi() {
 }
 build_xpi thunderbird kuchenmail-guard-thunderbird.xpi
 if [ -d "$SRC/extensions/webmail" ]; then
-  signed=$(ls "$SRC"/dist/kuchenmail-guard-webmail-*.xpi 2>/dev/null | tail -n 1 || true)
+  signed=$(ls "$SRC"/dist/*.xpi 2>/dev/null | tail -n 1 || true)
   if [ -n "$signed" ]; then
     cp "$signed" "$SHARE/kuchenmail-guard-webmail.xpi"
     say "Erweiterung: $SHARE/kuchenmail-guard-webmail.xpi (signiert)"

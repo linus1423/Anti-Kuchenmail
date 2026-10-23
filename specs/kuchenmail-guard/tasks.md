@@ -2,7 +2,7 @@
 
 > Status: Freigegeben (2026-10-23) · Basis: requirements.md, design.md (beide freigegeben 2026-10-22)
 
-Fortschritt: 11 / 20 erledigt (Code; manuelle Prüfungen auf Fedora siehe unten)
+Fortschritt: 15 / 20 erledigt (Code; manuelle Prüfungen auf Fedora siehe unten)
 
 Ab Meilenstein 2 gibt es etwas Lauffähiges: ein Kommandozeilen-Check, der sagt, ob eine Mail eine Kuchenmail ist. Ab Meilenstein 4 ist Thunderbird geschützt, danach folgen die Webmailer.
 
@@ -98,28 +98,28 @@ Ab Meilenstein 2 gibt es etwas Lauffähiges: ein Kommandozeilen-Check, der sagt,
 
 ## Meilenstein 5: Webmail geschützt
 
-- [ ] **T13** Webmail-Erweiterung: Grundgerüst
+- [x] **T13** Webmail-Erweiterung: Grundgerüst
   - Was: Background-Script mit Native-Port, Adapter-Schnittstelle (`readDraft`, `onSendAttempt`, `send`, `discard`, `onInput`), gemeinsamer Sende-Ablauf, fail-closed-Hinweis, Optionen-Seite für Roundcube-Adressen (Berechtigung anfordern, Content-Script per `contentScripts.register`).
   - Dateien: `extensions/webmail/manifest.json`, `extensions/webmail/background.js`, `extensions/webmail/flow.js`, `extensions/webmail/options/`
   - Fertig wenn: `web-ext lint` ohne Fehler; Test-Adapter auf einer lokalen HTML-Seite durchläuft `send`/`cancel`/`discard`.
   - Abhängig von: T2, T10
   - _Req: R1.2, R2.1, R2.3, R2.5, R4.5_
 
-- [ ] **T14** Gmail-Adapter
+- [x] **T14** Gmail-Adapter
   - Was: Adapter nach T2-Selektoren, Klick und `Strg+Enter`, erneutes Auslösen nach Freigabe, Verwerfen.
   - Dateien: `extensions/webmail/adapters/gmail.js`
   - Fertig wenn: Manuelle Prüfung in Gmail wie bei T11 (alle Ausgänge, normale Mail, Host aus).
   - Abhängig von: T13
   - _Req: R1.2, R2.1, R2.3, R2.4, R2.5_
 
-- [ ] **T15** Outlook-Adapter
+- [x] **T15** Outlook-Adapter
   - Was: Adapter nach T2-Selektoren, Deutsch und Englisch, neues Fenster und Inline-Antwort.
   - Dateien: `extensions/webmail/adapters/outlook.js`
   - Fertig wenn: Manuelle Prüfung in Outlook im Web wie bei T11, in beiden Oberflächensprachen.
   - Abhängig von: T13
   - _Req: R4.7, R1.2, R2.1, R2.3, R2.4, R2.5_
 
-- [ ] **T16** Roundcube-Adapter
+- [x] **T16** Roundcube-Adapter
   - Was: Seitenskript umhüllt `rcmail.command('send')`, Kommunikation per `postMessage`, Text aus Klartext- und HTML-Editor, Verwerfen.
   - Dateien: `extensions/webmail/adapters/roundcube.js`, `extensions/webmail/adapters/roundcube-page.js`
   - Fertig wenn: Manuelle Prüfung auf Linus' Roundcube wie bei T11, in Klartext- und HTML-Editor; Adresse über Optionen-Seite eingetragen.
@@ -218,6 +218,8 @@ Abgehakt heißt: Code und automatische Tests sind fertig. Was nur auf Linus' Rec
 - [ ] T9: `loginctl lock-session` sperrt GNOME
 - [ ] T11: Thunderbird-Abläufe (Abbruch, Freigabe, 3× falsch, normale Mail, Host gestoppt); ob `tabs.remove` das Compose-Fenster ohne Rückfrage schließt
 - [ ] T12: Installation in ein echtes Fedora-Home, Thunderbird-Manifestpfad
+- [ ] T14–T16: Gmail, Outlook (Firma und privat, Deutsch und Englisch) und jede Roundcube-Instanz mit echten Seiten; Selektoren nach dem Ergebnis von T2 nachziehen
+- [ ] T17: Signieren braucht Linus' AMO-API-Schlüssel (`make sign-webmail`), danach Installation in Firefox und Neustart-Test
 
 ### Notizen
 
@@ -242,4 +244,13 @@ Abgehakt heißt: Code und automatische Tests sind fertig. Was nur auf Linus' Rec
   - Thunderbird verlangt keine Signatur für Add-ons aus Datei; die `.xpi` wird vom Installer gebaut.
   - JS-Tests: `make test-js` (Node.js nötig) testet die Hintergrundskripte mit gefälschter `browser`-API. `make check` = Lint + Python- + JS-Tests.
   - Installer legt eine fast leere, kommentierte `rules.toml` an (statt einer Kopie der Standardregeln), damit spätere Verbesserungen der Standardlisten automatisch greifen. Notifier-Unit und Firefox-`.xpi` werden schon berücksichtigt, sobald M5/M6 sie liefern.
+- **M5 (T13–T16, 2026-10-23; T17 vorbereitet):**
+  - Gemeinsamer Ablauf in `shared/flow.js`, DOM-Hilfen für Gmail/Outlook in `shared/dom.js`. Abgefangen werden `pointerdown/mousedown/pointerup/mouseup/click` auf Senden-Buttons (Gmail reagiert teils schon auf `mouseup`), Enter/Leertaste auf dem Button und Strg/⌘+Enter im Entwurf. Freigabe löst die Ereignisfolge erneut aus und lässt 1,5 s lang alles durch.
+  - Ein Entwurf = erste Vorfahr-Ebene mit Mailtext **und** Senden-Button. Wird kein Entwurf erkannt (z. B. Strg+Enter in einem unbekannten Editor), wird trotzdem blockiert (fail-closed).
+  - Outlook: Empfängerfelder sind dort ebenfalls `contenteditable`; Mailtext = Feld mit `aria-label` „Nachricht…/Message…“, sonst erstes Nicht-Empfängerfeld. „Später senden“ und „Weitere Sendeoptionen“ zählen nicht als Senden.
+  - Roundcube: `rcmail.command` wird über Firefox-Xray (`wrappedJSObject`, `exportFunction`, `cloneInto`) umhüllt, kein eigenes Seitenskript nötig. Verwerfen leert Editor und Betreff und wechselt zur Liste.
+  - Prüfung beim Schreiben (R4.5) per Polling alle 2 s statt `input`-Events, gleich für alle Adapter (Events aus TinyMCE-iframes kommen oben nicht an).
+  - Tests: jsdom-Nachbauten der drei Oberflächen (`tests/js/webmail-adapters.test.mjs`). Sie prüfen die Logik, nicht ob die Selektoren zur echten Seite passen.
+  - Entwicklungswerkzeuge über `package.json` (`npm install`: jsdom, web-ext). `make lint` lintet die Erweiterungen, wenn web-ext installiert ist; Webmail mit `--warnings-as-errors` sauber.
+  - T17: `make sign-webmail` signiert mit `AMO_JWT_ISSUER`/`AMO_JWT_SECRET` aus der Umgebung nach `dist/`; `install.sh` übernimmt die signierte `.xpi` von dort.
 
