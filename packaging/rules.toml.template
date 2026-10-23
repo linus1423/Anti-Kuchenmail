@@ -1,0 +1,17 @@
+# Kuchenmail-Guard: eigene Regeln
+#
+# Hier nur eintragen, was von den Standardregeln abweichen soll. Die Standardregeln
+# mit allen Wortlisten und Erklärungen stehen in:
+#   ~/.local/share/kuchenmail-guard/guard/default_rules.toml
+#
+# Änderungen gelten ab der nächsten Prüfung, ohne Neustart.
+#
+# Beispiele (zum Aktivieren das # entfernen):
+#
+# lock_on_detect = true        # Bildschirm schon beim Schreiben sperren
+# threshold = 1.2              # strenger: erst ab höherem Score nachfragen
+# recipient_limit = 5
+#
+# [patterns]
+# # Achtung: eine Liste hier ersetzt die komplette Standardliste
+# food = ["kuchen", "torte", "mettbroetchen"]

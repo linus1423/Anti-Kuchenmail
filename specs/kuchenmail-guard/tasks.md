@@ -2,7 +2,7 @@
 
 > Status: Freigegeben (2026-10-23) · Basis: requirements.md, design.md (beide freigegeben 2026-10-22)
 
-Fortschritt: 9 / 20 erledigt
+Fortschritt: 11 / 20 erledigt (Code; manuelle Prüfungen auf Fedora siehe unten)
 
 Ab Meilenstein 2 gibt es etwas Lauffähiges: ein Kommandozeilen-Check, der sagt, ob eine Mail eine Kuchenmail ist. Ab Meilenstein 4 ist Thunderbird geschützt, danach folgen die Webmailer.
 
@@ -82,14 +82,14 @@ Ab Meilenstein 2 gibt es etwas Lauffähiges: ein Kommandozeilen-Check, der sagt,
 
 ## Meilenstein 4: Thunderbird geschützt
 
-- [ ] **T11** Thunderbird-Erweiterung
+- [x] **T11** Thunderbird-Erweiterung
   - Was: `onBeforeSend` → `before_send`, `{cancel: true}` bei `cancel`/`discard`, Fenster schließen bei `discard`, fail-closed mit Hinweis bei Port-Fehler; Polling für `check`, wenn `lock_on_detect`.
   - Dateien: `extensions/thunderbird/manifest.json`, `extensions/thunderbird/background.js`
   - Fertig wenn: `web-ext lint` ohne Fehler; manuell auf Fedora: Kuchenmail → Dialog, Abbruch behält Entwurf, Passwort sendet, 3× falsch sperrt; normale Mail geht ohne Dialog raus; Host gestoppt → Senden blockiert mit Hinweis.
   - Abhängig von: T2, T10
   - _Req: R1.2, R2.1, R2.3, R2.4, R2.5, R4.5_
 
-- [ ] **T12** Installer (Teil 1: Host und Thunderbird)
+- [x] **T12** Installer (Teil 1: Host und Thunderbird)
   - Was: `install.sh`/`uninstall.sh` ohne Root: Paket nach `~/.local/share/kuchenmail-guard/`, Starter nach `~/.local/bin/`, Native-Manifeste (nur eigene Erweiterungs-IDs) an die in T2 bestätigten Orte, `rules.toml` nur anlegen, wenn keine existiert, `.xpi` bauen.
   - Dateien: `install.sh`, `uninstall.sh`, `packaging/native-manifest.json.in`
   - Fertig wenn: Auf frischem Fedora-Nutzer installiert ein Befehl alles, Thunderbird-Schutz funktioniert; `uninstall.sh` entfernt alles außer Log und Regeln (mit Hinweis).
@@ -209,6 +209,18 @@ Jede Anforderung ist mindestens einem Task zugeordnet; die Abhängigkeiten sind 
 
 ## Umsetzungsnotizen
 
+### Offene manuelle Prüfungen auf Fedora
+
+Abgehakt heißt: Code und automatische Tests sind fertig. Was nur auf Linus' Rechner geprüft werden kann, steht hier und wird in T20 abgearbeitet.
+
+- [ ] T2: Spike mit allen vier Clients (`spikes/README.md`)
+- [ ] T8: echtes Passwort über PAM-Dienst `login`, Verhalten von `pam_faillock` bei 3 Fehlversuchen
+- [ ] T9: `loginctl lock-session` sperrt GNOME
+- [ ] T11: Thunderbird-Abläufe (Abbruch, Freigabe, 3× falsch, normale Mail, Host gestoppt); ob `tabs.remove` das Compose-Fenster ohne Rückfrage schließt
+- [ ] T12: Installation in ein echtes Fedora-Home, Thunderbird-Manifestpfad
+
+### Notizen
+
 - **T1 (2026-10-23):** Testrunner ist `unittest` aus der Standardbibliothek (`make test`), damit auf Fedora kein `pytest` nachinstalliert werden muss; das Design lässt das ausdrücklich zu. Spätere Tests daher als `unittest.TestCase` schreiben (laufen auch unter pytest). `guard` bricht unter Python < 3.11 mit klarer Meldung ab (wegen `tomllib`). Geprüft mit Python 3.13 im Cloud-Container, noch nicht auf Linus' Fedora.
 - **T2 (vorbereitet):** `web-ext lint` meldet für die Thunderbird-Erweiterung erwartbar „UNSUPPORTED_API compose.onBeforeSend“ (Linter kennt nur Firefox-APIs). Firefox verlangt für neue Erweiterungen `browser_specific_settings.gecko.data_collection_permissions`; in allen Firefox-Manifesten `{"required": ["none"]}` setzen.
 - **M2 (T3–T6, 2026-10-23):**
@@ -223,4 +235,11 @@ Jede Anforderung ist mindestens einem Task zugeordnet; die Abhängigkeiten sind 
   - `check` mit `lock_on_detect` sperrt pro Entwurf (`draft_id`) nur einmal, sonst würde nach dem Entsperren sofort wieder gesperrt.
   - Zusätzliche Module: `guard/paths.py`, `guard/logsetup.py`, `guard/pam.py`; Starter `bin/kuchenmail-guard-host`.
   - Nicht umgesetzt: Heartbeat/`ping`-Zeitstempel für den Notifier (Design, Abschnitt Sicherheit). Ein fehlender Ping ist nicht von „Browser geschlossen“ zu unterscheiden und gäbe Fehlalarme.
+- **M4 (T11–T12, 2026-10-23):**
+  - `ping` liefert zusätzlich `lock_on_detect`, damit die Erweiterungen nur dann beim Schreiben prüfen, wenn die Option aktiv ist.
+  - Thunderbird-Verteilerlisten aus dem Adressbuch kommen als `list:<id>` beim Host an; Standardregel `^list:` zählt sie als Verteiler.
+  - Bei `discard` wird der Entwurf geleert und dann der Tab geschlossen; so bleibt selbst bei einer „Entwurf speichern?“-Rückfrage nichts vom Kuchentext übrig.
+  - Thunderbird verlangt keine Signatur für Add-ons aus Datei; die `.xpi` wird vom Installer gebaut.
+  - JS-Tests: `make test-js` (Node.js nötig) testet die Hintergrundskripte mit gefälschter `browser`-API. `make check` = Lint + Python- + JS-Tests.
+  - Installer legt eine fast leere, kommentierte `rules.toml` an (statt einer Kopie der Standardregeln), damit spätere Verbesserungen der Standardlisten automatisch greifen. Notifier-Unit und Firefox-`.xpi` werden schon berücksichtigt, sobald M5/M6 sie liefern.
 

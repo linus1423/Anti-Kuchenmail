@@ -78,6 +78,7 @@ timing = [
 ]
 # Empfängeradressen, die nach Verteiler aussehen
 distribution = [
+  "^list:",  # Verteilerliste aus dem Thunderbird-Adressbuch
   "^(team|alle|all|everyone|abteilung|office|buero|staff|mitarbeiter|info)[-._@]",
   "^[^@]*-(team|all|alle)@",
 ]

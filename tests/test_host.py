@@ -52,6 +52,7 @@ class GuardTest(unittest.TestCase):
         response = self.guard().handle({"type": "ping", "id": 7})
         self.assertTrue(response["ok"])
         self.assertEqual(response["id"], 7)
+        self.assertFalse(response["lock_on_detect"])
 
     def test_normal_mail_is_sent_without_dialog(self):
         def confirm(_):
