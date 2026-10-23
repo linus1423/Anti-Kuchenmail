@@ -1,0 +1,12 @@
+{
+  "name": "anti-kuchenmail",
+  "private": true,
+  "description": "Entwicklungswerkzeuge für die Erweiterungen (Tests, Lint, Signieren). Zum Benutzen nicht nötig.",
+  "scripts": {
+    "test": "node --test tests/js/*.test.mjs"
+  },
+  "devDependencies": {
+    "jsdom": "^26.1.0",
+    "web-ext": "^8.10.0"
+  }
+}

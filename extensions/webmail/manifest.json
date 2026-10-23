@@ -1,0 +1,49 @@
+{
+  "manifest_version": 2,
+  "name": "Kuchenmail-Guard (Webmail)",
+  "description": "Hält Kuchenmails in Gmail, Outlook im Web und Roundcube beim Senden an und gibt sie nur mit dem Passwort des Rechners frei.",
+  "version": "0.1.0",
+  "author": "Linus",
+  "browser_specific_settings": {
+    "gecko": {
+      "id": "webmail@kuchenmail-guard",
+      "strict_min_version": "128.0",
+      "data_collection_permissions": { "required": ["none"] }
+    }
+  },
+  "permissions": [
+    "nativeMessaging",
+    "notifications",
+    "storage",
+    "https://mail.google.com/*",
+    "https://outlook.office.com/*",
+    "https://outlook.office365.com/*",
+    "https://outlook.live.com/*",
+    "https://outlook.cloud.microsoft/*"
+  ],
+  "optional_permissions": ["*://*/*"],
+  "background": {
+    "scripts": ["native.js", "background.js"]
+  },
+  "content_scripts": [
+    {
+      "matches": ["https://mail.google.com/*"],
+      "js": ["shared/flow.js", "shared/dom.js", "adapters/gmail.js"],
+      "run_at": "document_idle"
+    },
+    {
+      "matches": [
+        "https://outlook.office.com/*",
+        "https://outlook.office365.com/*",
+        "https://outlook.live.com/*",
+        "https://outlook.cloud.microsoft/*"
+      ],
+      "js": ["shared/flow.js", "shared/dom.js", "adapters/outlook.js"],
+      "run_at": "document_idle"
+    }
+  ],
+  "options_ui": {
+    "page": "options/options.html",
+    "open_in_tab": false
+  }
+}
