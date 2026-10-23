@@ -1,0 +1,12 @@
+From: linus@firma.example
+To: all@company.example
+Subject: Status update
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+MIME-Version: 1.0
+
+Hi all,
+
+the migration is 80% done. We expect to finish next week.
+
+Best

@@ -77,7 +77,7 @@ Wenn Linus seinen Fedora-Rechner kurz entsperrt stehen lässt, schreiben Kollege
 
 ## Randbedingungen
 
-- Fedora Linux, aktuelle Version, GNOME auf Wayland.
+- Fedora Linux 44, GNOME auf Wayland; Thunderbird und Firefox als dnf-Pakete (kein Flatpak), Stand 2026-10-23.
 - Mail-Clients: Thunderbird sowie Gmail, Roundcube und Outlook als Webmail im Browser (**Annahme:** Firefox).
 - Einzelner Nutzer, einzelner Rechner, keine Server-Komponente.
 - Keine Vorgabe zur Programmiersprache.

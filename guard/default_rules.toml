@@ -1,0 +1,83 @@
+# Kuchenmail-Guard: Erkennungsregeln
+#
+# Eigene Anpassungen gehören nach ~/.config/kuchenmail-guard/rules.toml.
+# Dort reicht es, nur die Werte einzutragen, die du ändern willst; alles andere
+# kommt aus diesen Standardregeln. Listen ersetzen die Standardliste komplett.
+#
+# Muster sind reguläre Ausdrücke (Python-Syntax). Text und Muster werden vor dem
+# Vergleich vereinheitlicht: Kleinschreibung, ä→ae, ö→oe, ü→ue, ß→ss.
+#
+# Bewertung: Betreff und Text werden in Sätze bzw. Zeilen zerlegt. Ein Fenster aus
+# zwei benachbarten Sätzen zählt als Treffer, wenn darin Essen UND ein Angebot
+# vorkommen. Die Gewichte unten werden addiert; ab `threshold` gilt die Mail als
+# Kuchenmail-Verdacht.
+
+threshold = 1.0
+
+# Mehr Empfänger als das gilt als Verteiler-Mail.
+recipient_limit = 3
+
+# true: Bildschirm schon beim Schreiben sperren, nicht erst beim Senden.
+lock_on_detect = false
+
+[weights]
+strong_offer = 1.0   # Essen + "ich bringe ... mit", "spendiere", "geht auf mich" ...
+weak_offer = 0.6     # Essen + "für euch", "bedient euch", "greift zu" ...
+timing = 0.3         # Essen + "morgen", "Freitag", "10 Uhr" ...
+recipients = 0.3     # mehr als recipient_limit Empfänger oder Verteiler-Adresse
+food_density = 0.4   # Essen kommt mindestens food_density_min-mal vor (Gedichte)
+food_density_min = 3
+
+[patterns]
+food = [
+  "kuchen", "torte", "muffin", "brownie", "croissant", "broetchen", "brezel",
+  "\\bkeks", "plaetzchen", "cookie", "waffel", "donut", "doughnut", "krapfen",
+  "\\bpizza", "\\beis\\b", "eiscreme", "ice cream", "schokolade", "chocolate",
+  "gummibaer", "suessigkeiten", "\\bsuesses\\b", "\\bsnacks?\\b",
+  "fruehstueck", "breakfast", "\\bbagels?\\b", "pastr(y|ies)", "cinnamon roll",
+  "zimtschnecke", "tiramisu", "\\bsekt\\b", "\\bbier\\b", "\\bbeer\\b",
+  "\\bcake", "\\bpie\\b", "(eine|ne|'ne) runde\\b", "\\ba round\\b",
+]
+strong_offer = [
+  # Deutsch
+  "\\bbring\\w*\\b.{0,60}\\bmit\\b",
+  "\\bmitgebracht\\b",
+  "\\bich\\s+back\\w*\\b", "\\bback\\w*\\s+ich\\b", "\\bgebacken\\b",
+  "\\bgeb\\w*\\b.{0,40}\\baus\\b", "\\bausgeben\\b",
+  "\\bspendier",
+  "\\bgeht\\b.{0,30}\\bauf mich\\b", "\\bauf meine kosten\\b",
+  "\\blade\\b.{0,40}\\bein\\b",
+  "\\bgibt(s| es)\\b.{0,60}\\b(bei|von) mir\\b",
+  "\\bvon mir\\b",
+  "\\bschulde\\b",
+  # Englisch
+  "\\bi('ll| will)\\b.{0,30}\\bbring\\b",
+  "\\bi('m| am) bringing\\b", "\\bi brought\\b",
+  "\\bi('m| am| have|'ve)? ?bak(e|ed|ing)\\b", "\\bi('ll| will) bake\\b",
+  "\\bbak(ed|ing)\\b.{0,30}\\bfor (you|everyone|the team)\\b",
+  "\\bon me\\b", "\\bmy (treat|shout)\\b",
+  "\\bi('m| am) buying\\b", "\\bi('ll| will) buy\\b",
+  "\\bi owe (you|everyone)\\b",
+]
+weak_offer = [
+  "\\bfuer (euch|alle|jeden|das (ganze )?team|die (ganze )?abteilung)\\b",
+  "\\bbedient euch\\b", "\\bgreift zu\\b",
+  "\\blasst\\b.{0,20}\\bschmecken\\b", "\\bguten appetit\\b",
+  "\\b(ihr|euch)\\b.{0,30}\\bfreu", "\\bihr bekommt\\b",
+  "\\bfor (you all|everyone|all of you|the team|you guys)\\b",
+  "\\b(to|for) you all\\b", "\\bhelp yourselves\\b", "\\benjoy\\b",
+]
+timing = [
+  "\\bmorgen\\b", "\\buebermorgen\\b", "\\bheute\\b",
+  "\\b(montag|dienstag|mittwoch|donnerstag|freitag|samstag|sonntag)\\b",
+  "\\bnaechste[nr]? woche\\b", "\\bnachher\\b", "\\bgleich\\b",
+  "\\b\\d{1,2}([:.]\\d{2})? ?uhr\\b", "\\bab \\d{1,2}\\b",
+  "\\btomorrow\\b", "\\btoday\\b", "\\btonight\\b", "\\bthis (morning|afternoon)\\b",
+  "\\b(monday|tuesday|wednesday|thursday|friday)\\b", "\\bnext week\\b",
+  "\\bmorning\\b", "\\b\\d{1,2}(:\\d{2})? ?(am|pm)\\b",
+]
+# Empfängeradressen, die nach Verteiler aussehen
+distribution = [
+  "^(team|alle|all|everyone|abteilung|office|buero|staff|mitarbeiter|info)[-._@]",
+  "^[^@]*-(team|all|alle)@",
+]

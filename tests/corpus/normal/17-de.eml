@@ -1,0 +1,9 @@
+From: linus@firma.example
+To: anna@firma.example, ben@firma.example, carla@firma.example,
+ dirk@firma.example, eva@firma.example
+Subject: Urlaubsvertretung
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+MIME-Version: 1.0
+
+Ich bin ab Montag zwei Wochen im Urlaub. Vertretung übernimmt Ben.

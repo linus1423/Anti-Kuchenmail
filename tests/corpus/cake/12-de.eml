@@ -1,0 +1,28 @@
+From: linus@firma.example
+To: alle@firma.example
+Subject: Kurze Info
+MIME-Version: 1.0
+Content-Type: multipart/alternative;
+ boundary="===============4779789963732609568=="
+
+--===============4779789963732609568==
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+
+Liebe Kolleginnen und Kollegen,
+
+morgen bringe ich Brownies und Kekse mit.
+
+Viele Grüße
+Linus
+
+--===============4779789963732609568==
+Content-Type: text/html; charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+MIME-Version: 1.0
+
+<html><body><p>Liebe Kolleginnen und Kollegen,</p><p>morgen bringe ich <b>Bro=
+wnies</b> und <b>Kekse</b> mit.</p><p>Viele Gr=C3=BC=C3=9Fe<br>Linus</p></bod=
+y></html>
+
+--===============4779789963732609568==--

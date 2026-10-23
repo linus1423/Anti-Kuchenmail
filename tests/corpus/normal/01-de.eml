@@ -1,0 +1,13 @@
+From: linus@firma.example
+To: anna@firma.example, ben@firma.example, carla@firma.example,
+ dirk@firma.example, eva@firma.example
+Subject: Termin verschoben
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+MIME-Version: 1.0
+
+Hallo zusammen,
+
+das Jour fixe am Dienstag verschiebt sich auf 14 Uhr.
+
+Viele Grüße

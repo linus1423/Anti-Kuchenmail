@@ -1,0 +1,12 @@
+From: linus@firma.example
+To: anna@firma.example, ben@firma.example, carla@firma.example,
+ dirk@firma.example, eva@firma.example
+Subject: Ein kleines Gedicht
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+MIME-Version: 1.0
+
+Der Kuchen ist rund,
+die Torte ist süß,
+morgen bring ich sie mit,
+liebe Grüß'!

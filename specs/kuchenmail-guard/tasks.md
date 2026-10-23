@@ -2,7 +2,7 @@
 
 > Status: Freigegeben (2026-10-23) · Basis: requirements.md, design.md (beide freigegeben 2026-10-22)
 
-Fortschritt: 1 / 20 erledigt
+Fortschritt: 5 / 20 erledigt
 
 Ab Meilenstein 2 gibt es etwas Lauffähiges: ein Kommandozeilen-Check, der sagt, ob eine Mail eine Kuchenmail ist. Ab Meilenstein 4 ist Thunderbird geschützt, danach folgen die Webmailer.
 
@@ -18,32 +18,32 @@ Ab Meilenstein 2 gibt es etwas Lauffähiges: ein Kommandozeilen-Check, der sagt,
   - Was: Wegwerf-Erweiterungen, die nur loggen und blockieren, für alle vier Clients. Prüfen: (a) Thunderbird `onBeforeSend` hält das Senden 120 s an und liefert Betreff, Text, Empfänger; (b) Native-Messaging-Manifest-Pfad für Thunderbird auf Fedora; (c) Gmail, Outlook im Web und Roundcube: Senden per Klick und Tastenkürzel abfangbar, Betreff/Text/Empfänger lesbar, Senden nach Freigabe wieder auslösbar. Ergebnisse und funktionierende Selektoren in „Umsetzungsnotizen“.
   - Dateien: `spikes/thunderbird/`, `spikes/webmail/`, `specs/kuchenmail-guard/tasks.md`
   - Fertig wenn: Für jeden der vier Clients steht in den Notizen „abfangbar ja/nein“ plus Selektoren; bei „nein“ ist eine Design-Anpassung vorgeschlagen.
-  - Hinweis: Muss auf Linus' Rechner mit seinen Konten laufen (Anleitung liefere ich mit). Braucht Roundcube-Adresse und Outlook-Kontotyp.
+  - Hinweis: Muss auf Linus' Rechner mit seinen Konten laufen. **Stand 2026-10-23:** Test-Kit und Anleitung liegen in `spikes/` (README), Durchführung durch Linus steht aus.
   - _Req: R1.2, R2.1, R4.6, R4.7_
 
 ## Meilenstein 2: Erkennung (erster lauffähiger Stand)
 
-- [ ] **T3** Test-Korpus
+- [x] **T3** Test-Korpus
   - Was: Mind. 30 Kuchenmails und 50 normale Mails als `.eml`, Deutsch und Englisch. Normale Mails enthalten bewusst Essens-Wörter ohne Angebot („Kuchen steht in der Küche“, Kantinenplan, Rezept-Weiterleitung, Antwort auf eine fremde Kuchenmail).
   - Dateien: `tests/corpus/cake/*.eml`, `tests/corpus/normal/*.eml`, `tests/corpus/README.md`
   - Fertig wenn: Zählen ergibt ≥ 30 / ≥ 50 Dateien, beide Sprachen vertreten, ≥ 5 Mails mit Zitaten.
   - _Req: N2, N3, R1.4, R1.5_
 
-- [ ] **T4** Regeln laden
+- [x] **T4** Regeln laden
   - Was: `default_rules.toml` (Wortlisten DE/EN, Gewichte, Schwelle, `recipient_limit = 3`, `lock_on_detect = false`), `load_rules()` mit `mtime`-Cache und Fallback bei fehlender/kaputter Datei plus Warnung.
   - Dateien: `guard/rules.py`, `guard/default_rules.toml`, `tests/test_rules.py`
   - Fertig wenn: Tests für Laden, Neuladen nach Änderung ohne Neustart, Fallback mit Warnung sind grün.
   - Abhängig von: T1
   - _Req: R4.1, R4.2, R4.3_
 
-- [ ] **T5** Zitate entfernen
+- [x] **T5** Zitate entfernen
   - Was: `strip_quotes(text, html)` für `>`-Zeilen, „Am … schrieb …:“/„On … wrote:“, Weiterleitungs-Kopf, Thunderbird-, Gmail-, Roundcube- und Outlook-HTML-Zitate.
   - Dateien: `guard/quotes.py`, `tests/test_quotes.py`, `tests/fixtures/quotes/`
   - Fertig wenn: Je Client mind. ein HTML- und ein Klartext-Fixture wird korrekt gekürzt.
   - Abhängig von: T1
   - _Req: R1.5_
 
-- [ ] **T6** Klassifikator und CLI
+- [x] **T6** Klassifikator und CLI
   - Was: `classify(draft, rules) -> Verdict` mit Satz-Score (food + offer, timing als Bonus), Betreff, Empfänger-Bonus; CLI `python -m guard.classify mail.eml` gibt Verdikt und Treffer aus. Gewichte am Korpus kalibrieren.
   - Dateien: `guard/model.py`, `guard/classifier.py`, `guard/classify.py`, `tests/test_classifier.py`, `tests/test_corpus.py`
   - Fertig wenn: Korpustest zeigt ≥ 95 % erkannte Kuchenmails und ≤ 2 Fehlalarme; Test mit 10-kB-Mail < 200 ms; Empfänger > 3 und Verteiler erhöhen den Score.
@@ -210,3 +210,10 @@ Jede Anforderung ist mindestens einem Task zugeordnet; die Abhängigkeiten sind 
 ## Umsetzungsnotizen
 
 - **T1 (2026-10-23):** Testrunner ist `unittest` aus der Standardbibliothek (`make test`), damit auf Fedora kein `pytest` nachinstalliert werden muss; das Design lässt das ausdrücklich zu. Spätere Tests daher als `unittest.TestCase` schreiben (laufen auch unter pytest). `guard` bricht unter Python < 3.11 mit klarer Meldung ab (wegen `tomllib`). Geprüft mit Python 3.13 im Cloud-Container, noch nicht auf Linus' Fedora.
+- **T2 (vorbereitet):** `web-ext lint` meldet für die Thunderbird-Erweiterung erwartbar „UNSUPPORTED_API compose.onBeforeSend“ (Linter kennt nur Firefox-APIs). Firefox verlangt für neue Erweiterungen `browser_specific_settings.gecko.data_collection_permissions`; in allen Firefox-Manifesten `{"required": ["none"]}` setzen.
+- **M2 (T3–T6, 2026-10-23):**
+  - Korpus: 35 Kuchenmails, 60 normale Mails (inkl. Zitate aus allen vier Clients). Ergebnis: 35/35 erkannt, 0 Fehlalarme. **Achtung:** Korpus und Regeln sind zusammen entstanden, die Quote ist daher optimistisch; echte Mails von Linus (Gedichte, „ich backe einen Kuchen für euch“) sind eingeflossen, soweit beschrieben.
+  - Bewertung wie im Design, konkretisiert: Fenster aus zwei benachbarten Sätzen/Zeilen; `strong_offer` (1.0) und `weak_offer` (0.6) statt eines einzigen Angebots-Gewichts, damit „für euch“/„bedient euch“ allein nicht reicht, wohl aber zusammen mit Zeitangabe oder Verteiler. Zusätzlich `food_density` (0.4 ab 3 Essens-Wörtern) für Gedichte.
+  - Eigene Regeldatei überschreibt nur die angegebenen Werte; Listen ersetzen die Standardliste komplett. Muster werden wie der Text vereinheitlicht (ä→ae, ß→ss).
+  - Zusätzliche Module gegenüber Design: `guard/text.py` (Normalisierung), `guard/quotes.py` (statt in `classifier.py`), `guard/eml.py` (für CLI und Korpus).
+

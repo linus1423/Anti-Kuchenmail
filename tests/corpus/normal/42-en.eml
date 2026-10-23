@@ -1,0 +1,8 @@
+From: linus@firma.example
+To: all@company.example
+Subject: Allergy notice
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+MIME-Version: 1.0
+
+Please note that the pastries in the kitchen contain nuts.
