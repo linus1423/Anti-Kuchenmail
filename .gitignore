@@ -1,0 +1,6 @@
+__pycache__/
+*.py[cod]
+.pytest_cache/
+*.xpi
+web-ext-artifacts/
+.web-extension-id
