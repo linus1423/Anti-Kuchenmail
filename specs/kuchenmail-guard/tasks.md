@@ -2,7 +2,7 @@
 
 > Status: Freigegeben (2026-10-23) · Basis: requirements.md, design.md (beide freigegeben 2026-10-22)
 
-Fortschritt: 15 / 20 erledigt (Code; manuelle Prüfungen auf Fedora siehe unten)
+Fortschritt: 17 / 20 erledigt (Code; manuelle Prüfungen auf Fedora siehe unten)
 
 Ab Meilenstein 2 gibt es etwas Lauffähiges: ein Kommandozeilen-Check, der sagt, ob eine Mail eine Kuchenmail ist. Ab Meilenstein 4 ist Thunderbird geschützt, danach folgen die Webmailer.
 
@@ -136,14 +136,14 @@ Ab Meilenstein 2 gibt es etwas Lauffähiges: ein Kommandozeilen-Check, der sagt,
 
 ## Meilenstein 6: Benachrichtigung und Härtung
 
-- [ ] **T18** Hinweis nach Entsperren
+- [x] **T18** Hinweis nach Entsperren
   - Was: `notifier.py` hört auf `ActiveChanged(false)`, meldet `pending()` per `notify-send`, markiert gemeldet; prüft beim Start auch auf offene Versuche; systemd-User-Unit, im Installer aktivieren.
   - Dateien: `guard/notifier.py`, `packaging/kuchenmail-guard-notifier.service`, `tests/test_notifier.py`, `install.sh`
   - Fertig wenn: Test mit simuliertem Signal ruft `notify-send` je Versuch genau einmal; manuell: abgefangener Versuch → sperren → entsperren → Meldung; nach Neuanmeldung läuft der Dienst (`systemctl --user status`).
   - Abhängig von: T7, T12
   - _Req: R3.2, R4.4, N5_
 
-- [ ] **T19** Datenschutz- und Ressourcen-Checks
+- [x] **T19** Datenschutz- und Ressourcen-Checks
   - Was: Test, dass kein Modul `socket`, `urllib`, `http` o. Ä. importiert; Messung RAM/CPU von Host und Notifier im Leerlauf.
   - Dateien: `tests/test_no_network.py`, `specs/kuchenmail-guard/tasks.md` (Messwerte in Notizen)
   - Fertig wenn: Test grün; `ss -tunp` zeigt keine Sockets der Prozesse; Notifier < 50 MB RAM und < 1 % CPU.
@@ -219,6 +219,9 @@ Abgehakt heißt: Code und automatische Tests sind fertig. Was nur auf Linus' Rec
 - [ ] T11: Thunderbird-Abläufe (Abbruch, Freigabe, 3× falsch, normale Mail, Host gestoppt); ob `tabs.remove` das Compose-Fenster ohne Rückfrage schließt
 - [ ] T12: Installation in ein echtes Fedora-Home, Thunderbird-Manifestpfad
 - [ ] T14–T16: Gmail, Outlook (Firma und privat, Deutsch und Englisch) und jede Roundcube-Instanz mit echten Seiten; Selektoren nach dem Ergebnis von T2 nachziehen
+- [ ] T18: Meldung nach echtem Entsperren in GNOME, Dienst nach Neuanmeldung
+- [ ] T19: `ss -tunp` und RAM/CPU auf Fedora (im Container gemessen: siehe Notizen)
+- [ ] T20: komplette Abnahme nach `docs/e2e-checklist.md`
 - [ ] T17: Signieren braucht Linus' AMO-API-Schlüssel (`make sign-webmail`), danach Installation in Firefox und Neustart-Test
 
 ### Notizen
@@ -253,4 +256,10 @@ Abgehakt heißt: Code und automatische Tests sind fertig. Was nur auf Linus' Rec
   - Tests: jsdom-Nachbauten der drei Oberflächen (`tests/js/webmail-adapters.test.mjs`). Sie prüfen die Logik, nicht ob die Selektoren zur echten Seite passen.
   - Entwicklungswerkzeuge über `package.json` (`npm install`: jsdom, web-ext). `make lint` lintet die Erweiterungen, wenn web-ext installiert ist; Webmail mit `--warnings-as-errors` sauber.
   - T17: `make sign-webmail` signiert mit `AMO_JWT_ISSUER`/`AMO_JWT_SECRET` aus der Umgebung nach `dist/`; `install.sh` übernimmt die signierte `.xpi` von dort.
+- **M6 (T18–T19 umgesetzt, T20 vorbereitet, 2026-10-23):**
+  - Notifier meldet beim Start und bei `ActiveChanged(false)`. Selbst freigegebene Mails (`released`) werden als gemeldet markiert, aber nicht angezeigt, weil der Besitzer sie selbst freigegeben hat. Ab 4 offenen Versuchen eine Sammelmeldung statt vieler einzelner.
+  - Bricht `gdbus monitor` ab, startet der Notifier ihn nach 5 s neu; systemd startet den Dienst bei Absturz neu.
+  - N1-Test prüft statisch: keine Netzwerk-Module im Python-Code, keine `fetch`/`XMLHttpRequest`/`WebSocket` in den Erweiterungen.
+  - N5 im Container gemessen (Test `tests/test_resources.py`): Notifier im Leerlauf deutlich unter 50 MB RSS und unter 1 % CPU.
+  - T20: Abnahme-Checkliste `docs/e2e-checklist.md` und ausführliche README; die Abnahme selbst muss auf Linus' Fedora laufen.
 

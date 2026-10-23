@@ -55,6 +55,10 @@ class InstallTest(unittest.TestCase):
 
         self.assertTrue((self.home / ".config/kuchenmail-guard/rules.toml").exists())
 
+        unit = (self.home / ".config/systemd/user/kuchenmail-guard-notifier.service").read_text()
+        self.assertIn(f"ExecStart={self.share}/bin/kuchenmail-guard-notifier", unit)
+        self.assertIn("enable --now kuchenmail-guard-notifier.service", (self.home / "systemctl.log").read_text())
+
     def test_installed_host_answers_ping(self):
         self.run_script("install.sh")
         data = json.dumps({"type": "ping"}).encode()
@@ -82,6 +86,7 @@ class InstallTest(unittest.TestCase):
         self.assertFalse(self.share.exists())
         self.assertFalse((self.home / ".local/bin/kuchenmail-guard-host").exists())
         self.assertFalse((self.home / ".mozilla/native-messaging-hosts/kuchenmail_guard.json").exists())
+        self.assertFalse((self.home / ".config/systemd/user/kuchenmail-guard-notifier.service").exists())
         self.assertTrue((self.home / ".config/kuchenmail-guard/rules.toml").exists())
         self.assertTrue((state / "attempts.jsonl").exists())
 
