@@ -1,6 +1,6 @@
 # Projektkontext (Steering)
 
-> Status: Entwurf
+> Status: Freigegeben (2026-10-23)
 
 | Thema | Stand |
 |---|---|

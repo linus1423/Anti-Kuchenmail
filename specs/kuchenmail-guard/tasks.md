@@ -1,6 +1,6 @@
 # Tasks: Kuchenmail-Guard
 
-> Status: Entwurf · Basis: requirements.md, design.md (beide freigegeben 2026-10-22)
+> Status: Freigegeben (2026-10-23) · Basis: requirements.md, design.md (beide freigegeben 2026-10-22)
 
 Fortschritt: 0 / 20 erledigt
 
