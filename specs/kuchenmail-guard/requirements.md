@@ -97,6 +97,6 @@ Wenn Linus seinen Fedora-Rechner kurz entsperrt stehen lässt, schreiben Kollege
 - [x] Mail-Clients: Thunderbird, Gmail, Roundcube und Outlook im Browser (geklärt 2026-10-22).
 - [x] GNOME auf Wayland, Freigabe per Linux-Passwort (bestätigt 2026-10-22).
 - [x] Alle Webmailer laufen in Firefox (bestätigt 2026-10-22).
-- [ ] Unter welcher Adresse läuft dein Roundcube (z. B. `webmail.example.de`), und welche Version bzw. welches Skin? — Linus
-- [ ] Outlook im Web: Firmenkonto (Microsoft 365), privates Outlook.com oder beides? Oberfläche auf Deutsch oder Englisch? — Linus
+- [x] Roundcube: mehrere Instanzen (geklärt 2026-10-23). Adressen trägt Linus selbst in den Erweiterungs-Optionen ein; Versionen werden im Spike T2 ermittelt.
+- [x] Outlook im Web: Firmenkonto und privates Outlook.com (geklärt 2026-10-23); beide werden in T2 und T15 geprüft.
 - [ ] Sollen auch Chat-Tools (Teams, Slack) abgedeckt werden? Aktuell Out of Scope. — Linus
