@@ -4,7 +4,7 @@ Protokoll (WebExtensions): je Nachricht 4 Byte Länge in nativer Byte-Reihenfolg
 danach UTF-8-JSON. Der Host läuft, solange die Erweiterung den Port offen hält.
 
 Anfragen:
-  {"type": "ping"}
+  {"type": "ping"}  → {"ok", "version", "lock_on_detect"}
   {"type": "before_send", "client", "subject", "plain_text", "html", "recipients", ["id"]}
   {"type": "check", ... wie before_send ..., "draft_id"}
 Antworten tragen die "id" der Anfrage, falls vorhanden.
@@ -96,7 +96,8 @@ class Guard:
         kind = message.get("type")
         try:
             if kind == "ping":
-                response = {"ok": True, "version": __version__}
+                rules = self.rules_loader()
+                response = {"ok": True, "version": __version__, "lock_on_detect": rules.lock_on_detect}
             elif kind == "before_send":
                 response = self.before_send(draft_from_message(message))
             elif kind == "check":
