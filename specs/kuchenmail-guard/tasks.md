@@ -2,7 +2,7 @@
 
 > Status: Freigegeben (2026-10-23) · Basis: requirements.md, design.md (beide freigegeben 2026-10-22)
 
-Fortschritt: 5 / 20 erledigt
+Fortschritt: 9 / 20 erledigt
 
 Ab Meilenstein 2 gibt es etwas Lauffähiges: ein Kommandozeilen-Check, der sagt, ob eine Mail eine Kuchenmail ist. Ab Meilenstein 4 ist Thunderbird geschützt, danach folgen die Webmailer.
 
@@ -52,28 +52,28 @@ Ab Meilenstein 2 gibt es etwas Lauffähiges: ein Kommandozeilen-Check, der sagt,
 
 ## Meilenstein 3: Guard-Host
 
-- [ ] **T7** Versuchs-Log
+- [x] **T7** Versuchs-Log
   - Was: `append`, `pending`, `mark_notified` auf `~/.local/state/kuchenmail-guard/attempts.jsonl`; Ordner 0700, Datei 0600; nur Betreff und Empfänger, kein Mailtext.
   - Dateien: `guard/attempt_log.py`, `tests/test_attempt_log.py`
   - Fertig wenn: Tests prüfen Rechte 0600, Inhalt ohne Mailtext, `pending`/`mark_notified`-Ablauf.
   - Abhängig von: T1
   - _Req: R3.1, R3.3, N1_
 
-- [ ] **T8** Passwort-Freigabe
+- [x] **T8** Passwort-Freigabe
   - Was: `confirm_send(subject)` mit `zenity --password` und PAM über `ctypes` (Dienst `login`), max. 3 Versuche → `RELEASED`/`CANCELLED`/`FAILED`; Fehler, wenn `zenity` fehlt.
   - Dateien: `guard/auth.py`, `guard/pam.py`, `tests/test_auth.py`
   - Fertig wenn: Unit-Tests mit gemocktem zenity/PAM decken alle drei Ausgänge ab; manueller Check auf Fedora: richtiges Passwort → `RELEASED`, 3× falsch → `FAILED`.
   - Abhängig von: T1
   - _Req: R2.2, R2.3, R2.4, N7_
 
-- [ ] **T9** Bildschirm sperren
+- [x] **T9** Bildschirm sperren
   - Was: `lock_screen()` mit `loginctl lock-session`, Fallback D-Bus `org.gnome.ScreenSaver.Lock`, Fehler ins Log.
   - Dateien: `guard/lock.py`, `tests/test_lock.py`
   - Fertig wenn: Tests prüfen Aufruf und Fallback (gemockt); manueller Check sperrt GNOME.
   - Abhängig von: T1
   - _Req: R2.4, R4.5_
 
-- [ ] **T10** Native-Messaging-Host
+- [x] **T10** Native-Messaging-Host
   - Was: Längenpräfix-Protokoll, Nachrichten `before_send`, `check`, `ping`, Fehlerantworten; Abbildung Verdikt/Outcome → `send`/`cancel`/`discard`; `lock_on_detect` bei `check`; 120-s-Timeout → `cancel`.
   - Dateien: `guard/host.py`, `bin/kuchenmail-guard-host`, `tests/test_host.py`, `tests/test_host_integration.py`
   - Fertig wenn: Integrationstest startet den Host als Subprozess und prüft alle Nachrichten inkl. ungültiger Eingabe; normale Mail → `send` in < 100 ms.
@@ -216,4 +216,11 @@ Jede Anforderung ist mindestens einem Task zugeordnet; die Abhängigkeiten sind 
   - Bewertung wie im Design, konkretisiert: Fenster aus zwei benachbarten Sätzen/Zeilen; `strong_offer` (1.0) und `weak_offer` (0.6) statt eines einzigen Angebots-Gewichts, damit „für euch“/„bedient euch“ allein nicht reicht, wohl aber zusammen mit Zeitangabe oder Verteiler. Zusätzlich `food_density` (0.4 ab 3 Essens-Wörtern) für Gedichte.
   - Eigene Regeldatei überschreibt nur die angegebenen Werte; Listen ersetzen die Standardliste komplett. Muster werden wie der Text vereinheitlicht (ä→ae, ß→ss).
   - Zusätzliche Module gegenüber Design: `guard/text.py` (Normalisierung), `guard/quotes.py` (statt in `classifier.py`), `guard/eml.py` (für CLI und Korpus).
+- **M3 (T7–T10, 2026-10-23):**
+  - Versuchs-Log: statt eines `notified`-Felds zwei nur anhängende Dateien (`attempts.jsonl`, `notified.ids`). So können Host und Benachrichtigungsdienst gleichzeitig schreiben, ohne sich Einträge zu überschreiben.
+  - Passwortdialog: `zenity --entry --hide-text` statt `zenity --password`, weil nur so ein Erklärtext (Betreff, Versuch x von 3) angezeigt werden kann.
+  - PAM per `ctypes` mit Dienst `login`: als normaler Nutzer im Container (Debian-PAM) mit richtigem und falschem Passwort geprüft. **Auf Fedora noch zu prüfen**, insbesondere ob `pam_faillock` die drei Fehlversuche auf die Kontosperre anrechnet.
+  - `check` mit `lock_on_detect` sperrt pro Entwurf (`draft_id`) nur einmal, sonst würde nach dem Entsperren sofort wieder gesperrt.
+  - Zusätzliche Module: `guard/paths.py`, `guard/logsetup.py`, `guard/pam.py`; Starter `bin/kuchenmail-guard-host`.
+  - Nicht umgesetzt: Heartbeat/`ping`-Zeitstempel für den Notifier (Design, Abschnitt Sicherheit). Ein fehlender Ping ist nicht von „Browser geschlossen“ zu unterscheiden und gäbe Fehlalarme.
 
